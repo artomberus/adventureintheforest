@@ -1,9 +1,11 @@
 # Adventure in the forest. Лесное приключение.
 
-Interactive textographic game on INSTEAD (stead3) engine.
+Interactive textographic game on INSTEAD engine.
 
 Текстографическая игра на движке INSTEAD (stead3), квест, приключение. Мой первый игровой проект. Графику и код создаю с ноля. Музыка и звуки - свободные, взяты в сети.
 
 Сейчас игра не завершена, но уже можно пройти достаточно много локаций. Выкладываю на GitHub во избежание потери данных, периодически буду обновлять. 
 
 Код опубликован под MIT.
+
+Ветка форума, на которой всё это обсуждается - http://instead-games.ru/forum/index.php?p=/discussion/671/voprosy-artomberus
