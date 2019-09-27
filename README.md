@@ -1,5 +1,6 @@
-# adventureintheforest
-Interactive textographic game on INSTEAD engine
+# Adventure in the forest. Лесное приключение.
+
+Interactive textographic game on INSTEAD engine.
 
 Текстографическая игра на движке INSTEAD, квест, приключение. Мой первый игровой проект. Графику и код создаю с ноля. Музыка и звуки - свободные, взяты в сети.
 
