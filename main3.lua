@@ -2282,9 +2282,6 @@ obj {
 room {
 	nam = 'village';
 	title = 'Деревня';
---	pic = function()
---	if not nableguest then return 'gfx/31.png;gfx/daynight2/daynight17.png@0,0' else return 'gfx/31_2.png' end
---	end;
 	pic = function()
 	if not nableguest and evening == 0 then return 'gfx/31.png;gfx/daynight2/daynight0.png@0,0' end;
 	if not nableguest and evening == 1 then return 'gfx/31.png;gfx/daynight2/daynight1.png@0,0' end;
@@ -2536,16 +2533,8 @@ obj {
 room {
 	nam = 'insalun';
 	disp = 'В трактире';
---	enter = function()
---	snd.music('mus/Plantation.ogg');
---	end;
 enter = function()
 	snd.music('mus/Plantation.ogg');
---	if not have('pivo') and not perelilpivo then enable('#enableexit1') disable('#enableattention1') end;
---	if have('pivo') and not perelilpivo then disable('#enableexit1') enable ('#enableattention1') end;
---	if not have('nopivo') and perelilpivo and krotdal then enable('#enableexit1') disable('#enableattention1') end;
---	if have('nopivo') and perelilpivo and not krotdal then disable('#enableexit1') enable('#enableattention1') end;
-
 	if have('pivo') or have('nopivo') then disable('#enableexit1') enable ('#enableattention1') end;
 	if not have('pivo') and not have('nopivo') then enable('#enableexit1') disable('#enableattention1') end;
 	end;
@@ -2557,8 +2546,6 @@ enter = function()
 	decor = function()
 	p [[Ты видишь {tobarmen|человека}. Ты можешь присесть за ближайший свободный {tositdown|столик}. Ты можешь рассмотреть {tokartina|картину}, что висит на стене.]];
 	end;
---	way = { path{'Выйти', 'village'} };
---}
 	way = { path{'#enableexit1', 'Выйти', 'village'}:disable() , path{'#enableattention1', 'Выйти', 'talkaboutkruzhka'}:disable() };
 }:with {
 	obj {
@@ -2666,7 +2653,6 @@ room {
 	if evening == 29 and birdontree then return 'gfx/39_2.png;gfx/daynight2/daynight29.png@0,0' end;
 	if evening == 30 and birdontree then return 'gfx/39_2.png;gfx/daynight2/daynight30.png@0,0' end;
 	if evening > 30 and birdontree then return 'gfx/39_2.png;gfx/daynight2/daynight30.png@0,0' end;
---	'gfx/39.png';
 	end;
 	obj = {'dub2', 'duplo2', 'tojarptica'};
 	decor = function()
@@ -2797,10 +2783,6 @@ if not z^'pivo' then return false; end
 obj {
 	nam = 'talkwithbarmen';
 	act = function()
---	if not pivotaked and not perelilpivo then walkin('dlgbarmen') elseif pivotaked and not perelilpivo and not krotdal then walkin('dlgbarmen2') elseif pivotaked and not perelilpivo and  krotdal then walkin('dlgbarmen4') end;
---	if perelilpivo and  triedtoescape and not krotdal then walkin('dlgbarmen3') 
---	elseif perelilpivo and not triedtoescape then walkin('dlgbarmen4') end;
-
 	if not pivotaked then walkin('dlgbarmen') end;
 	if pivotaked and not krotdal and triedtoescape then walkin('dlgbarmen3') end;
 	if pivotaked and not krotdal and not triedtoescape then walkin('dlgbarmen2') end;
@@ -3212,7 +3194,6 @@ room {
 	if evening == 30 then return 'gfx/38.png;gfx/daynight2/daynight30.png@0,0' end;
 	if evening > 30 then return 'gfx/38.png;gfx/daynight2/daynight30.png@0,0' end;
 	end;
---	pic = 'gfx/38.png';
 	onenter = function()
 	seaseen = true;
 	end;
@@ -3243,6 +3224,3 @@ obj {
 	if not zanaveskaopen then zanaveskaopen = true else zanaveskaopen = false end
 	end;
 }
-
-
-
