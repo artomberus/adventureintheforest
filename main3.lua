@@ -197,6 +197,7 @@ global { -- Много разных переменных. В основном л
 	perelilpivo = false; -- решил ли квест с пивом и кружкой
 	triedtoescape = false; -- пытался ли украсть кружку
 	krotdal = false; -- отдал ли кружку
+	mukaest = false; -- брал ли муку у мельника
 }
 
 stat {
@@ -2785,7 +2786,7 @@ obj {
 		if z^'pivo' then
 		p [[-- Спасибо, конечно, но я не позволяю себе выпивать, пока работаю. Вот в конце дня - это да...]];
 		elseif z^'pero' then
-		if not pivotaked then p [[Спасибо. Держи своё пиво. Кружку принесешь обратно!]] take('pivo') pivotaked = true remove('pero')  end return
+		if not pivotaked then p [[-- Спасибо. Держи своё пиво. Кружку принесешь обратно!]] take('pivo') pivotaked = true remove('pero')  end return
 		end
 if not z^'pivo' or z^'nopivo' then return false; end
 	end;
@@ -3099,6 +3100,10 @@ obj {
 	act = function()
 	walkin('inmelnic');
 	end;
+	used = function(n,z)
+	if z^'kuvshinzpivom' then walkin('dlgmelnicwithpivo') end;
+	if z^'muka' then p[[Отдать назад?]] end;
+	end;
 }
 
 room {
@@ -3113,9 +3118,15 @@ room {
 }
 
 obj {
+	nam = 'muka';
+	disp = fmt.img('gfx/inv/muka.png')..'Мука';
+	inv = 'Мука. Отличная мука!';
+}
+
+obj {
 	nam = 'talkwithmelnic';
 	act = function()
-	walkin('dlgmelnic');
+	if not mukaest then walkin('dlgmelnic') else walkin('dlgmelnicaftermuka') end;
 	end;
 }
 
@@ -3151,6 +3162,7 @@ dlg {
 	pic = 'gfx/41_2.png';
 	enter = function(s)
 	p [[-- О, пиво! Спасибо! А почему оно в кувшине? Мог бы и кружку найти. Но ладно. Договор есть договор. Держи свою муку.]];
+	take('muka'); remove('kuvshinzpivom'); mukaest = true;
 	bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
 	end;
 	exit = function()
@@ -3167,6 +3179,33 @@ dlg {
 		},
 }
 }
+
+dlg {
+	nam = 'dlgmelnicaftermuka';
+	disp = 'Разговор с мельником';
+	noinv = true;
+	pic = 'gfx/41_2.png';
+	enter = function(s)
+	p [[-- А, это ты. Принес тараньку?]];
+	take('muka'); remove('kuvshinzpivom');
+	bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
+	end;
+	exit = function()
+	bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+	end;
+	phr = { -- начало фразы
+		only = true;
+		{'Принес.','-- Тогда где же она?', 
+		only = true;
+			{ 'А что мне за это будет?','-- Ишь какой! А что, нельзя просто доброе дело сделать?'
+			},
+			{ 'Вот, держи.','-- Спасибо, странник. Дарю тебе взамен...'
+			}, 
+		},
+		{'Не принес.','-- Жаль.'},
+}
+}
+
 room {
 	nam = 'roomlodka';
 	disp = 'Возле моря';
