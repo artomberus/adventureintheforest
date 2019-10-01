@@ -3124,7 +3124,7 @@ obj {
 }
 
 obj {
-	nam = 'taranka';
+	nam = 'taranka'; -- таранька
 	disp = fmt.img('gfx/inv/taranka.png')..'Таранька';
 	inv = 'Сушеная рыба застыла с недоуменным выражением "лица". Да. Кажется, ты начинаешь понимать защитников животных...';
 }
@@ -3257,7 +3257,6 @@ room {
 	end;
 	way = { path{'К дубу', 'indub'} };
 }
-
 
 room {
 	nam = 'guesthouse';
