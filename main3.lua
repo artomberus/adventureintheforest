@@ -3124,6 +3124,12 @@ obj {
 }
 
 obj {
+	nam = 'taranka';
+	disp = fmt.img('gfx/inv/taranka.png')..'Таранька';
+	inv = 'Сушеная рыба застыла с недоуменным выражением "лица". Да. Кажется, ты начинаешь понимать защитников животных...';
+}
+
+obj {
 	nam = 'talkwithmelnic';
 	act = function()
 	if not mukaest then walkin('dlgmelnic') else walkin('dlgmelnicaftermuka') end;
