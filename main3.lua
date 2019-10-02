@@ -2968,7 +2968,15 @@ obj {
 	p [[Забавный, круглый, сказочный столик. Сделан с любовью.]]; 
 	end;
 	used = function (n, z)
-		if z^'kuvshin' or z^'kuvshin2' then
+		if z^'nopivo' then -- сделать - чтобы можно было поставить кружку и выйти, при выходе диалог, где ты говоришь - я оставил кружку, заберите. Или подобное. При заходе снова кружки уже нет.
+		p [[Лучше отдать её хозяину.]]; return
+		elseif z^'pivo' then
+		p [[Не время расслабляться, товарищ.]]; return -- куда спешишь товарищ, не время для потехи
+		elseif z^'kuvshinzpivom' then
+		p [[Не время расслабляться!]]; return
+		elseif z^'kuvshin' or z^'kuvshin2' and not have('pivo') and not have('nopivo') then
+		p [[Пустой кувшин даже на столе останется пустым кувшином...]]; return
+		elseif z^'kuvshin' or z^'kuvshin2' and have('pivo') and not have('nopivo') then
 		p [[Ты поставил кувшин на столик. Теперь можно легко перелить в него пиво.]]; kuvshinontable = true; 
 		if have('kuvshin') then remove('kuvshin') end; if have('kuvshin2') then remove('kuvshin2') end;
 		return
