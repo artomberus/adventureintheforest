@@ -193,11 +193,23 @@ global { -- Много разных переменных. В основном л
 	pivotaked = false; -- обменял ли перо на пиво
 	postavpivoje = false; -- находимся ли мы за столиком
 	kuvshinontable = false; -- поставлен ли кувшин на столик
+	zabralkuvshinpivo = false; -- забрал ли кувшин с пивом со столика
 	notfull = true; -- кувшин обычно не полон
 	perelilpivo = false; -- решил ли квест с пивом и кружкой
 	triedtoescape = false; -- пытался ли украсть кружку
 	krotdal = false; -- отдал ли кружку
 	mukaest = false; -- брал ли муку у мельника
+	seegulls = true; -- видим ли чаек
+	gullscounter = 0; -- счетчик состояния чаек (от 1 до 4)
+	gullscheck = 0; -- переменная, чтобы рандом не повторялся
+	nopivoontable = false; -- оставил ли пустую кружку на столе
+	zabral = false; -- забрал ли хозяин кружку со стола
+	vipusti = false; -- переменная нужна для того, чтобы не вызывать диалог про кружку, если уже погоговорил об этом
+	combo = false; -- ловим сочетание условий, когда не надо вызывать диалог про то, что оставил кружку
+	youcanplace = false; -- когда можно поставить пустую кружку
+	wasintalkaboutkruzhka2 = false; -- один хак исправляет другой. для правильного выбора диалога, даже если вышел, оставив кружку на столе
+	tyvor = false; -- вор ли ты
+	needpivo = false; -- узнали ли от мельника, что нужно пиво
 }
 
 stat {
@@ -2347,6 +2359,7 @@ room {
 	enter = function()
 	if nableguest then enable('#enableguest') end
 	snd.music('mus/AMomentsReflection.ogg');
+	if vipusti then zabral = true end; -- плохое, неочевидное решение (но хз)
 --	evening = evening+1;
 	end;
 	decor = function()
@@ -2526,21 +2539,32 @@ room {
 	disp = 'В трактире';
 enter = function()
 	snd.music('mus/Plantation.ogg');
-	if have('pivo') or have('nopivo') then disable('#enableexit1') enable ('#enableattention1') end;
-	if not have('pivo') and not have('nopivo') then enable('#enableexit1') disable('#enableattention1') end;
+	if have('pivo') or have('nopivo') and not nopivoontable then disable('#enableexit1') enable ('#enableattention1') end;
+	if not have('pivo') and not have('nopivo') and not nopivoontable then enable('#enableexit1') disable('#enableattention1') end;
+	if nopivoontable and not zabral then enable('#enableexit2') disable('#enableattention1') end;
+	if nopivoontable and zabral then enable('#enableexit1') disable('#enableattention1') disable('#enableexit2') end;
+	if vipusti then enable('#enableexit1') disable('#enableattention1') disable('#enableexit2') end;
 	end;
 
 	pic = function()
-	if not have('pivo') then return 'gfx/33.png' else return 'gfx/33_1.png' end;
+	if not have('pivo') and not have('nopivo') and not nopivoontable and not zabral then return 'gfx/33.png'; end;
+	if have('pivo')  and not have('nopivo') and not nopivoontable and not zabral then return 'gfx/33_1.png'; end;
+	if nopivoontable  and not have('nopivo') and not zabral then return 'gfx/33_2.png'; end;
+	if zabral  and not have('nopivo') then return 'gfx/33.png'; end;
+
+	if have('nopivo') then return 'gfx/33_1.png'; end;
 	end;
 	obj = {'tobarmen', 'tositdown', 'tokartina'};
 	decor = function()
 	p [[Ты видишь {tobarmen|человека}. Ты можешь присесть за ближайший свободный {tositdown|столик}. Ты можешь рассмотреть {tokartina|картину}, что висит на стене.]];
 	end;
-	way = { path{'#enableexit1', 'Выйти', 'village'}:disable() , path{'#enableattention1', 'Выйти', 'talkaboutkruzhka'}:disable() };
+	way = { path{'#enableexit1', 'Выйти', 'village'}:disable() , path{'#enableexit2', 'Выйти', 'talkaboutkruzhka2'}:disable() , path{'#enableattention1', 'Выйти', 'talkaboutkruzhka'}:disable() };
 }:with {
 	obj {
 		nam = 'enableexit1';
+	    };
+	obj {
+		nam = 'enableexit2';
 	    };
 	obj {
 		nam = 'enableattention1';
@@ -2552,10 +2576,12 @@ dlg {
 	disp = 'Стоять!';
 	noinv = true;
 	pic = function()
-	if not have('pivo') then return 'gfx/33.png' else return 'gfx/33_1.png' end;
+	if not have('pivo') and not have('nopivo') then return 'gfx/33.png' else return 'gfx/33_1.png' end;
+	if have('nopivo') then return 'gfx/33_1.png'; end;
 	end;
 	enter = function(s)
 	triedtoescape = true;
+	tyvor = true;
 	p [[-- Далеко собрался? Кружку отдай!]];
 	bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
 	end;
@@ -2570,6 +2596,32 @@ dlg {
 	      } -- конец фразы
 }
 
+dlg {
+	nam = 'talkaboutkruzhka2';
+	disp = 'В трактире';
+	noinv = true;
+	pic = function()
+	if not have('pivo') and not nopivoontable then return 'gfx/33.png'; end;
+	if have('pivo') and not nopivoontable then return 'gfx/33_1.png'; end;
+	if nopivoontable then return 'gfx/33_2.png'; end;
+	end;
+	enter = function(s)
+	if combo then walkin('village') end;
+	triedtoescape = true;
+	wasintalkaboutkruzhka2 = true;
+	p [[-- А отдать кружку?]];
+	bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
+	end;
+	exit = function()
+	bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+	end;
+	phr = { -- начало фразы
+		{'Я оставил её на столике.','-- А, хорошо, я потом заберу.',
+			{ 'До свидания!', function() p'-- Пока.' zabral = true; walk('village') end;
+			}
+		},
+	      } -- конец фразы
+}
 
 room {
 	nam = 'indub';
@@ -2750,7 +2802,12 @@ room {
 	nam = 'inbarmen';
 	disp = 'Возле хозяина заведения';
 	pic = function()
-	if not have('pivo') then return 'gfx/34.png' else return 'gfx/34_1.png' end;
+	if not have('pivo') and not have('nopivo') and not nopivoontable and not zabral then return 'gfx/34.png'; end;
+	if have('pivo') and not have('nopivo') and not nopivoontable and not zabral then return 'gfx/34_1.png'; end;
+	if nopivoontable and not have('nopivo') and not zabral then return 'gfx/34_1.png'; end;
+	if zabral and not have('nopivo') then return 'gfx/34.png'; end;
+
+	if have('nopivo') then return 'gfx/34_1.png'; end;
 	end;
 	decor = [[Ты видишь {talkwithbarmen|человека}, который стоит за столиком. Он пристально смотрит на тебя. Почему-то ты уверен, что это не просто бармен, а хозяин этого места. ]];
 	obj = {'talkwithbarmen'};
@@ -2763,7 +2820,7 @@ obj {
 	walkin('insitdown');
 	end;
 	used = function (n, z)
-		if z^'pivo' then
+		if z^'pivo' or z^'nopivo' then
 		p [[Надо подойти поближе.]];
 		return
 		end
@@ -2774,13 +2831,24 @@ if not z^'pivo' then return false; end
 obj {
 	nam = 'talkwithbarmen';
 	act = function()
-	if not pivotaked then walkin('dlgbarmen') end;
-	if pivotaked and not krotdal and triedtoescape then walkin('dlgbarmen3') end;
-	if pivotaked and not krotdal and not triedtoescape then walkin('dlgbarmen2') end;
-	if pivotaked and krotdal and triedtoescape then walkin('dlgbarmen3') end;
-	if pivotaked and krotdal and not triedtoescape then walkin('dlgbarmen4') end;
+	if vipusti and zabral then combo = true; end; -- когда не вызываем диалог, что оставил кружку уже на столе
+	
+	if not pivotaked and not needpivo then walkin('dlgbarmennopivo') end;
+
+	if not pivotaked and not combo and needpivo then walkin('dlgbarmen') end;
+	if pivotaked and not krotdal and triedtoescape and not combo and not wasintalkaboutkruzhka2 and not tyvor then walkin('dlgbarmen3') end;
+	if pivotaked and not krotdal and not triedtoescape and not combo and not wasintalkaboutkruzhka2 and not tyvor then walkin('dlgbarmen2') end;
+	if pivotaked and krotdal and triedtoescape and not combo and not wasintalkaboutkruzhka2 and not tyvor then walkin('dlgbarmen3') end;
+	if pivotaked and krotdal and not triedtoescape and not combo and not wasintalkaboutkruzhka2 and not tyvor then walkin('dlgbarmen4') end;
+	
+	if combo and triedtoescape and not wasintalkaboutkruzhka2 and not tyvor then walkin('dlgbarmen3') end;
+	if combo and not triedtoescape and not tyvor then walkin('dlgbarmen4') end;
+	
+	if wasintalkaboutkruzhka2 and not tyvor then walkin('dlgbarmen4') end;
+	if tyvor then walkin('dlgbarmen3') end;
 	end;
 	used = function (n, z)
+		if z^'kuvshin' or z^'kuvshin2' then p [[Вряд ли ему нужен пустой кувшин.]] return end;
 		if z^'kuvshinzpivom' then p [[-- Я не пью пиво из кувшинов...]]; return end;
 		if z^'nopivo' then p [[-- Наконец-то! Теперь ступай себе с миром.]]; remove('nopivo') krotdal = true; return end;
 		if z^'pivo' then
@@ -2843,6 +2911,31 @@ dlg {
 }
 
 dlg {
+	nam = 'dlgbarmennopivo';
+	disp = 'Разговор с хозяином трактира';
+	noinv = true;
+	pic = 'gfx/34_2.png';
+	enter = function(s)
+	p [[-- Приветствую. Чего желаете?]];
+	bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
+	end;
+	exit = function()
+	bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+	end;
+	phr = { -- начало фразы
+		only = true;
+--		{'Пива бы.','-- С вас 13 золотых.',
+--			{ 'У меня нет с собой денег. Тем более, золотых монет...', function() p'-- Понимаю. В таком случае, принеси перо жар-птицы и пиво твоё.' needpero = true end
+--			}
+--		},
+		{'А что у вас есть?','-- Лосось. Свежайший. Сам словил. 26 золотых.',
+			{ 'У меня нет денег... Я вообще попал сюда случайно.', function() p'-- А я не занимаюсь благотворительностью.'  end
+			},
+		}
+	      } -- конец фразы
+}
+
+dlg {
 	nam = 'dlgbarmen2'; -- диалог после того, как взял пиво
 	disp = 'Разговор с хозяином трактира';
 	noinv = true;
@@ -2856,8 +2949,8 @@ dlg {
 	end;
 	phr = { -- начало фразы
 		only = true;
-		{'Можно забрать кружку с собой?','-- Нет. У меня их и так мало осталось.',
-			{ 'Но я хочу занести пиво для мельника. И отдам кружку назад!', function() p'-- Нет.'  end
+		{ function() if not nopivoontable then p'Можно забрать кружку с собой?' else p 'Я оставил кружку на столике.' vipusti = true; end end , function() if not nopivoontable then p'-- Нет. У меня их и так мало осталось.' else p 'А, хорошо, я потом заберу.' end end ,
+			{ function() if not nopivoontable then p'Но я хочу занести пиво для мельника. И отдам кружку назад!' else p 'До свидания!' end end , function() if not nopivoontable then p'-- Нет.' else p'Пока.' end end
 			}
 		},
 		{'А что у вас есть?','-- Лосось. Свежайший. Сам словил. 26 золотых.',
@@ -2921,12 +3014,15 @@ room {
 	nam = 'insitdown';
 	disp = 'За столиком';
 	pic = function()
-	if not kuvshinontable then return 'gfx/35.png' end;
+	if not kuvshinontable and nopivoontable and not zabral then return 'gfx/35_3.png' end;
+	if not kuvshinontable and not nopivoontable and not zabral then return 'gfx/35.png' end;
+	if zabral then return 'gfx/35.png' end;
 	if kuvshinontable and notfull then return 'gfx/35_1.png' elseif kuvshinontable and not notfull then return 'gfx/35_2.png' end;
 	end;
 	decor = function()
 	p [[{stolik|Столик} прекрасно вписывается в интерьер своим необычным дизайном. Ты присел за него. Можешь, наконец, расслабить ноги после столь долгого пути. Что может быть приятнее, чем просто сидеть в уютном месте и наслаждаться атмосферой?]];
 	if kuvshinontable and notfull then p [[^^На столике стоит пустой {kuvshonstol|кувшин}.]] end; if kuvshinontable and not notfull then p [[^^На столике стоит {kuvshonstolwithpivo|кувшин}, наполненный пивом.]] end; 
+	if nopivoontable and not zabral then p [[^На столике стоит пустая кружка.]]; end; 
 	end;
 	onenter = function()
 	postavpivoje = true;
@@ -2945,7 +3041,7 @@ obj {
 	end;
 	used = function (n, z)
 		if z^'pivo'  then
-		p [[Ты аккуратно перелил пиво из кружки в кувшин. Готово!]]; notfull = false;  replace('pivo', 'nopivo');
+		p [[Ты аккуратно перелил пиво из кружки в кувшин. Готово!]]; notfull = false; replace('pivo', 'nopivo');
 		return
 		end
 if not z^'pivo' then return false; end
@@ -2959,6 +3055,8 @@ obj {
 	take('kuvshinzpivom');
 	kuvshinontable = false;
 	perelilpivo = true;
+	youcanplace = true;
+	zabralkuvshinpivo = true;
 	end;
 }
 
@@ -2968,9 +3066,12 @@ obj {
 	p [[Забавный, круглый, сказочный столик. Сделан с любовью.]]; 
 	end;
 	used = function (n, z)
-		if z^'nopivo' then -- сделать - чтобы можно было поставить кружку и выйти, при выходе диалог, где ты говоришь - я оставил кружку, заберите. Или подобное. При заходе снова кружки уже нет.
-		p [[Лучше отдать её хозяину.]]; return
-		elseif z^'pivo' then
+		if z^'pero' then p [[Хочешь вытереть пыль? Её нет - стол затёрт до блеска.]] return end;
+		if z^'nopivo' and not youcanplace then p [[Забери сначала пиво, что ли? Мне влом было делать ещё одно состояние сцены.]] return end;
+		if z^'nopivo' and youcanplace then
+		p [[Ты оставил пустую кружку на столе.]]; nopivoontable = true;
+		remove('nopivo'); return end;
+		if z^'pivo' then
 		p [[Не время расслабляться, товарищ.]]; return -- куда спешишь товарищ, не время для потехи
 		elseif z^'kuvshinzpivom' then
 		p [[Не время расслабляться!]]; return
@@ -3159,7 +3260,7 @@ dlg {
 	phr = { -- начало фразы
 		only = true;
 		{'Мне бы муки. Хотя бы немного.','-- Всё имеет свою цену. Мука вся расписана по жителям деревни, кому не досталась - тот сидит голодный.',
-			{ 'И нельзя выделить хотя бы килограмм?','-- Можно. Принеси мне пива из трактира и будет тебе килограмм муки.'
+			{ 'И нельзя выделить хотя бы килограмм?', function() p[[-- Можно. Принеси мне пива из трактира и будет тебе килограмм муки.]]; needpivo = true; end;
 			}
 		},
 --		{'Спасибо. Я больше никогда не голоден, благодаря одной вещице...','-- Интересно, что же это?',
@@ -3225,43 +3326,154 @@ room {
 	disp = 'Возле моря';
 	enter = function()
 --	evening = evening+1;
+--	if gullscounter >= 4 then gullscounter = 0; end;
+	gullscheck = gullscounter;
+	if gullscheck == gullscounter then gullscounter = rnd(4) end;
+	if gullscounter == 4 then seegulls = false else seegulls = true end;
+--	pn ('counter:', string.sub(((gullscounter)),1,4)) -- временная строчка для показа переменной
+--	pn ('check:', string.sub(((gullscheck)),1,4))
 	end;
 	pic = function()
-	if evening == 0 then return 'gfx/38.png;gfx/daynight2/daynight0.png@0,0' end;
-	if evening == 1 then return 'gfx/38.png;gfx/daynight2/daynight1.png@0,0' end;
-	if evening == 2 then return 'gfx/38.png;gfx/daynight2/daynight2.png@0,0' end;
-	if evening == 3 then return 'gfx/38.png;gfx/daynight2/daynight3.png@0,0' end;
-	if evening == 4 then return 'gfx/38.png;gfx/daynight2/daynight4.png@0,0' end;
-	if evening == 5 then return 'gfx/38.png;gfx/daynight2/daynight5.png@0,0' end;
-	if evening == 6 then return 'gfx/38.png;gfx/daynight2/daynight6.png@0,0' end;
-	if evening == 7 then return 'gfx/38.png;gfx/daynight2/daynight7.png@0,0' end;
-	if evening == 8 then return 'gfx/38.png;gfx/daynight2/daynight8.png@0,0' end;
-	if evening == 9 then return 'gfx/38.png;gfx/daynight2/daynight9.png@0,0' end;
-	if evening == 10 then return 'gfx/38.png;gfx/daynight2/daynight10.png@0,0' end;
-	if evening == 11 then return 'gfx/38.png;gfx/daynight2/daynight11.png@0,0' end;
-	if evening == 12 then return 'gfx/38.png;gfx/daynight2/daynight12.png@0,0' end;
-	if evening == 13 then return 'gfx/38.png;gfx/daynight2/daynight13.png@0,0' end;
-	if evening == 14 then return 'gfx/38.png;gfx/daynight2/daynight14.png@0,0' end;
-	if evening == 15 then return 'gfx/38.png;gfx/daynight2/daynight15.png@0,0' end;
-	if evening == 16 then return 'gfx/38.png;gfx/daynight2/daynight16.png@0,0' end;
-	if evening == 17 then return 'gfx/38.png;gfx/daynight2/daynight17.png@0,0' end;
-	if evening == 18 then return 'gfx/38.png;gfx/daynight2/daynight18.png@0,0' end;
-	if evening == 19 then return 'gfx/38.png;gfx/daynight2/daynight19.png@0,0' end;
-	if evening == 20 then return 'gfx/38.png;gfx/daynight2/daynight20.png@0,0' end;
-	if evening == 21 then return 'gfx/38.png;gfx/daynight2/daynight21.png@0,0' end;
-	if evening == 22 then return 'gfx/38.png;gfx/daynight2/daynight22.png@0,0' end;
-	if evening == 23 then return 'gfx/38.png;gfx/daynight2/daynight23.png@0,0' end;
-	if evening == 24 then return 'gfx/38.png;gfx/daynight2/daynight24.png@0,0' end;
-	if evening == 25 then return 'gfx/38.png;gfx/daynight2/daynight25.png@0,0' end;
-	if evening == 26 then return 'gfx/38.png;gfx/daynight2/daynight26.png@0,0' end;
-	if evening == 27 then return 'gfx/38.png;gfx/daynight2/daynight27.png@0,0' end;
-	if evening == 28 then return 'gfx/38.png;gfx/daynight2/daynight28.png@0,0' end;
-	if evening == 29 then return 'gfx/38.png;gfx/daynight2/daynight29.png@0,0' end;
-	if evening == 30 then return 'gfx/38.png;gfx/daynight2/daynight30.png@0,0' end;
-	if evening > 30 then return 'gfx/38.png;gfx/daynight2/daynight30.png@0,0' end;
+	if evening == 0 and gullscounter == 1 then return 'gfx/38.png;gfx/daynight2/daynight0.png@0,0' end;
+	if evening == 1 and gullscounter == 1 then return 'gfx/38.png;gfx/daynight2/daynight1.png@0,0' end;
+	if evening == 2 and gullscounter == 1 then return 'gfx/38.png;gfx/daynight2/daynight2.png@0,0' end;
+	if evening == 3 and gullscounter == 1 then return 'gfx/38.png;gfx/daynight2/daynight3.png@0,0' end;
+	if evening == 4 and gullscounter == 1 then return 'gfx/38.png;gfx/daynight2/daynight4.png@0,0' end;
+	if evening == 5 and gullscounter == 1 then return 'gfx/38.png;gfx/daynight2/daynight5.png@0,0' end;
+	if evening == 6 and gullscounter == 1 then return 'gfx/38.png;gfx/daynight2/daynight6.png@0,0' end;
+	if evening == 7 and gullscounter == 1 then return 'gfx/38.png;gfx/daynight2/daynight7.png@0,0' end;
+	if evening == 8 and gullscounter == 1 then return 'gfx/38.png;gfx/daynight2/daynight8.png@0,0' end;
+	if evening == 9 and gullscounter == 1 then return 'gfx/38.png;gfx/daynight2/daynight9.png@0,0' end;
+	if evening == 10 and gullscounter == 1 then return 'gfx/38.png;gfx/daynight2/daynight10.png@0,0' end;
+	if evening == 11 and gullscounter == 1 then return 'gfx/38.png;gfx/daynight2/daynight11.png@0,0' end;
+	if evening == 12 and gullscounter == 1 then return 'gfx/38.png;gfx/daynight2/daynight12.png@0,0' end;
+	if evening == 13 and gullscounter == 1 then return 'gfx/38.png;gfx/daynight2/daynight13.png@0,0' end;
+	if evening == 14 and gullscounter == 1 then return 'gfx/38.png;gfx/daynight2/daynight14.png@0,0' end;
+	if evening == 15 and gullscounter == 1 then return 'gfx/38.png;gfx/daynight2/daynight15.png@0,0' end;
+	if evening == 16 and gullscounter == 1 then return 'gfx/38.png;gfx/daynight2/daynight16.png@0,0' end;
+	if evening == 17 and gullscounter == 1 then return 'gfx/38.png;gfx/daynight2/daynight17.png@0,0' end;
+	if evening == 18 and gullscounter == 1 then return 'gfx/38.png;gfx/daynight2/daynight18.png@0,0' end;
+	if evening == 19 and gullscounter == 1 then return 'gfx/38.png;gfx/daynight2/daynight19.png@0,0' end;
+	if evening == 20 and gullscounter == 1 then return 'gfx/38.png;gfx/daynight2/daynight20.png@0,0' end;
+	if evening == 21 and gullscounter == 1 then return 'gfx/38.png;gfx/daynight2/daynight21.png@0,0' end;
+	if evening == 22 and gullscounter == 1 then return 'gfx/38.png;gfx/daynight2/daynight22.png@0,0' end;
+	if evening == 23 and gullscounter == 1 then return 'gfx/38.png;gfx/daynight2/daynight23.png@0,0' end;
+	if evening == 24 and gullscounter == 1 then return 'gfx/38.png;gfx/daynight2/daynight24.png@0,0' end;
+	if evening == 25 and gullscounter == 1 then return 'gfx/38.png;gfx/daynight2/daynight25.png@0,0' end;
+	if evening == 26 and gullscounter == 1 then return 'gfx/38.png;gfx/daynight2/daynight26.png@0,0' end;
+	if evening == 27 and gullscounter == 1 then return 'gfx/38.png;gfx/daynight2/daynight27.png@0,0' end;
+	if evening == 28 and gullscounter == 1 then return 'gfx/38.png;gfx/daynight2/daynight28.png@0,0' end;
+	if evening == 29 and gullscounter == 1 then return 'gfx/38.png;gfx/daynight2/daynight29.png@0,0' end;
+	if evening == 30 and gullscounter == 1 then return 'gfx/38.png;gfx/daynight2/daynight30.png@0,0' end;
+	if evening > 30 and gullscounter == 1 then return 'gfx/38.png;gfx/daynight2/daynight30.png@0,0' end;
+
+	if evening == 0 and gullscounter == 2 then return 'gfx/38_2.png;gfx/daynight2/daynight0.png@0,0' end;
+	if evening == 1 and gullscounter == 2 then return 'gfx/38_2.png;gfx/daynight2/daynight1.png@0,0' end;
+	if evening == 2 and gullscounter == 2 then return 'gfx/38_2.png;gfx/daynight2/daynight2.png@0,0' end;
+	if evening == 3 and gullscounter == 2 then return 'gfx/38_2.png;gfx/daynight2/daynight3.png@0,0' end;
+	if evening == 4 and gullscounter == 2 then return 'gfx/38_2.png;gfx/daynight2/daynight4.png@0,0' end;
+	if evening == 5 and gullscounter == 2 then return 'gfx/38_2.png;gfx/daynight2/daynight5.png@0,0' end;
+	if evening == 6 and gullscounter == 2 then return 'gfx/38_2.png;gfx/daynight2/daynight6.png@0,0' end;
+	if evening == 7 and gullscounter == 2 then return 'gfx/38_2.png;gfx/daynight2/daynight7.png@0,0' end;
+	if evening == 8 and gullscounter == 2 then return 'gfx/38_2.png;gfx/daynight2/daynight8.png@0,0' end;
+	if evening == 9 and gullscounter == 2 then return 'gfx/38_2.png;gfx/daynight2/daynight9.png@0,0' end;
+	if evening == 10 and gullscounter == 2 then return 'gfx/38_2.png;gfx/daynight2/daynight10.png@0,0' end;
+	if evening == 11 and gullscounter == 2 then return 'gfx/38_2.png;gfx/daynight2/daynight11.png@0,0' end;
+	if evening == 12 and gullscounter == 2 then return 'gfx/38_2.png;gfx/daynight2/daynight12.png@0,0' end;
+	if evening == 13 and gullscounter == 2 then return 'gfx/38_2.png;gfx/daynight2/daynight13.png@0,0' end;
+	if evening == 14 and gullscounter == 2 then return 'gfx/38_2.png;gfx/daynight2/daynight14.png@0,0' end;
+	if evening == 15 and gullscounter == 2 then return 'gfx/38_2.png;gfx/daynight2/daynight15.png@0,0' end;
+	if evening == 16 and gullscounter == 2 then return 'gfx/38_2.png;gfx/daynight2/daynight16.png@0,0' end;
+	if evening == 17 and gullscounter == 2 then return 'gfx/38_2.png;gfx/daynight2/daynight17.png@0,0' end;
+	if evening == 18 and gullscounter == 2 then return 'gfx/38_2.png;gfx/daynight2/daynight18.png@0,0' end;
+	if evening == 19 and gullscounter == 2 then return 'gfx/38_2.png;gfx/daynight2/daynight19.png@0,0' end;
+	if evening == 20 and gullscounter == 2 then return 'gfx/38_2.png;gfx/daynight2/daynight20.png@0,0' end;
+	if evening == 21 and gullscounter == 2 then return 'gfx/38_2.png;gfx/daynight2/daynight21.png@0,0' end;
+	if evening == 22 and gullscounter == 2 then return 'gfx/38_2.png;gfx/daynight2/daynight22.png@0,0' end;
+	if evening == 23 and gullscounter == 2 then return 'gfx/38_2.png;gfx/daynight2/daynight23.png@0,0' end;
+	if evening == 24 and gullscounter == 2 then return 'gfx/38_2.png;gfx/daynight2/daynight24.png@0,0' end;
+	if evening == 25 and gullscounter == 2 then return 'gfx/38_2.png;gfx/daynight2/daynight25.png@0,0' end;
+	if evening == 26 and gullscounter == 2 then return 'gfx/38_2.png;gfx/daynight2/daynight26.png@0,0' end;
+	if evening == 27 and gullscounter == 2 then return 'gfx/38_2.png;gfx/daynight2/daynight27.png@0,0' end;
+	if evening == 28 and gullscounter == 2 then return 'gfx/38_2.png;gfx/daynight2/daynight28.png@0,0' end;
+	if evening == 29 and gullscounter == 2 then return 'gfx/38_2.png;gfx/daynight2/daynight29.png@0,0' end;
+	if evening == 30 and gullscounter == 2 then return 'gfx/38_2.png;gfx/daynight2/daynight30.png@0,0' end;
+	if evening > 30 and gullscounter == 2 then return 'gfx/38_2.png;gfx/daynight2/daynight30.png@0,0' end;
+
+	if evening == 0 and gullscounter == 3 then return 'gfx/38_3.png;gfx/daynight2/daynight0.png@0,0' end;
+	if evening == 1 and gullscounter == 3 then return 'gfx/38_3.png;gfx/daynight2/daynight1.png@0,0' end;
+	if evening == 2 and gullscounter == 3 then return 'gfx/38_3.png;gfx/daynight2/daynight2.png@0,0' end;
+	if evening == 3 and gullscounter == 3 then return 'gfx/38_3.png;gfx/daynight2/daynight3.png@0,0' end;
+	if evening == 4 and gullscounter == 3 then return 'gfx/38_3.png;gfx/daynight2/daynight4.png@0,0' end;
+	if evening == 5 and gullscounter == 3 then return 'gfx/38_3.png;gfx/daynight2/daynight5.png@0,0' end;
+	if evening == 6 and gullscounter == 3 then return 'gfx/38_3.png;gfx/daynight2/daynight6.png@0,0' end;
+	if evening == 7 and gullscounter == 3 then return 'gfx/38_3.png;gfx/daynight2/daynight7.png@0,0' end;
+	if evening == 8 and gullscounter == 3 then return 'gfx/38_3.png;gfx/daynight2/daynight8.png@0,0' end;
+	if evening == 9 and gullscounter == 3 then return 'gfx/38_3.png;gfx/daynight2/daynight9.png@0,0' end;
+	if evening == 10 and gullscounter == 3 then return 'gfx/38_3.png;gfx/daynight2/daynight10.png@0,0' end;
+	if evening == 11 and gullscounter == 3 then return 'gfx/38_3.png;gfx/daynight2/daynight11.png@0,0' end;
+	if evening == 12 and gullscounter == 3 then return 'gfx/38_3.png;gfx/daynight2/daynight12.png@0,0' end;
+	if evening == 13 and gullscounter == 3 then return 'gfx/38_3.png;gfx/daynight2/daynight13.png@0,0' end;
+	if evening == 14 and gullscounter == 3 then return 'gfx/38_3.png;gfx/daynight2/daynight14.png@0,0' end;
+	if evening == 15 and gullscounter == 3 then return 'gfx/38_3.png;gfx/daynight2/daynight15.png@0,0' end;
+	if evening == 16 and gullscounter == 3 then return 'gfx/38_3.png;gfx/daynight2/daynight16.png@0,0' end;
+	if evening == 17 and gullscounter == 3 then return 'gfx/38_3.png;gfx/daynight2/daynight17.png@0,0' end;
+	if evening == 18 and gullscounter == 3 then return 'gfx/38_3.png;gfx/daynight2/daynight18.png@0,0' end;
+	if evening == 19 and gullscounter == 3 then return 'gfx/38_3.png;gfx/daynight2/daynight19.png@0,0' end;
+	if evening == 20 and gullscounter == 3 then return 'gfx/38_3.png;gfx/daynight2/daynight20.png@0,0' end;
+	if evening == 21 and gullscounter == 3 then return 'gfx/38_3.png;gfx/daynight2/daynight21.png@0,0' end;
+	if evening == 22 and gullscounter == 3 then return 'gfx/38_3.png;gfx/daynight2/daynight22.png@0,0' end;
+	if evening == 23 and gullscounter == 3 then return 'gfx/38_3.png;gfx/daynight2/daynight23.png@0,0' end;
+	if evening == 24 and gullscounter == 3 then return 'gfx/38_3.png;gfx/daynight2/daynight24.png@0,0' end;
+	if evening == 25 and gullscounter == 3 then return 'gfx/38_3.png;gfx/daynight2/daynight25.png@0,0' end;
+	if evening == 26 and gullscounter == 3 then return 'gfx/38_3.png;gfx/daynight2/daynight26.png@0,0' end;
+	if evening == 27 and gullscounter == 3 then return 'gfx/38_3.png;gfx/daynight2/daynight27.png@0,0' end;
+	if evening == 28 and gullscounter == 3 then return 'gfx/38_3.png;gfx/daynight2/daynight28.png@0,0' end;
+	if evening == 29 and gullscounter == 3 then return 'gfx/38_3.png;gfx/daynight2/daynight29.png@0,0' end;
+	if evening == 30 and gullscounter == 3 then return 'gfx/38_3.png;gfx/daynight2/daynight30.png@0,0' end;
+	if evening > 30 and gullscounter == 3 then return 'gfx/38_3.png;gfx/daynight2/daynight30.png@0,0' end;
+
+	if evening == 0 and gullscounter == 4 then return 'gfx/38_4.png;gfx/daynight2/daynight0.png@0,0' end;
+	if evening == 1 and gullscounter == 4 then return 'gfx/38_4.png;gfx/daynight2/daynight1.png@0,0' end;
+	if evening == 2 and gullscounter == 4 then return 'gfx/38_4.png;gfx/daynight2/daynight2.png@0,0' end;
+	if evening == 3 and gullscounter == 4 then return 'gfx/38_4.png;gfx/daynight2/daynight3.png@0,0' end;
+	if evening == 4 and gullscounter == 4 then return 'gfx/38_4.png;gfx/daynight2/daynight4.png@0,0' end;
+	if evening == 5 and gullscounter == 4 then return 'gfx/38_4.png;gfx/daynight2/daynight5.png@0,0' end;
+	if evening == 6 and gullscounter == 4 then return 'gfx/38_4.png;gfx/daynight2/daynight6.png@0,0' end;
+	if evening == 7 and gullscounter == 4 then return 'gfx/38_4.png;gfx/daynight2/daynight7.png@0,0' end;
+	if evening == 8 and gullscounter == 4 then return 'gfx/38_4.png;gfx/daynight2/daynight8.png@0,0' end;
+	if evening == 9 and gullscounter == 4 then return 'gfx/38_4.png;gfx/daynight2/daynight9.png@0,0' end;
+	if evening == 10 and gullscounter == 4 then return 'gfx/38_4.png;gfx/daynight2/daynight10.png@0,0' end;
+	if evening == 11 and gullscounter == 4 then return 'gfx/38_4.png;gfx/daynight2/daynight11.png@0,0' end;
+	if evening == 12 and gullscounter == 4 then return 'gfx/38_4.png;gfx/daynight2/daynight12.png@0,0' end;
+	if evening == 13 and gullscounter == 4 then return 'gfx/38_4.png;gfx/daynight2/daynight13.png@0,0' end;
+	if evening == 14 and gullscounter == 4 then return 'gfx/38_4.png;gfx/daynight2/daynight14.png@0,0' end;
+	if evening == 15 and gullscounter == 4 then return 'gfx/38_4.png;gfx/daynight2/daynight15.png@0,0' end;
+	if evening == 16 and gullscounter == 4 then return 'gfx/38_4.png;gfx/daynight2/daynight16.png@0,0' end;
+	if evening == 17 and gullscounter == 4 then return 'gfx/38_4.png;gfx/daynight2/daynight17.png@0,0' end;
+	if evening == 18 and gullscounter == 4 then return 'gfx/38_4.png;gfx/daynight2/daynight18.png@0,0' end;
+	if evening == 19 and gullscounter == 4 then return 'gfx/38_4.png;gfx/daynight2/daynight19.png@0,0' end;
+	if evening == 20 and gullscounter == 4 then return 'gfx/38_4.png;gfx/daynight2/daynight20.png@0,0' end;
+	if evening == 21 and gullscounter == 4 then return 'gfx/38_4.png;gfx/daynight2/daynight21.png@0,0' end;
+	if evening == 22 and gullscounter == 4 then return 'gfx/38_4.png;gfx/daynight2/daynight22.png@0,0' end;
+	if evening == 23 and gullscounter == 4 then return 'gfx/38_4.png;gfx/daynight2/daynight23.png@0,0' end;
+	if evening == 24 and gullscounter == 4 then return 'gfx/38_4.png;gfx/daynight2/daynight24.png@0,0' end;
+	if evening == 25 and gullscounter == 4 then return 'gfx/38_4.png;gfx/daynight2/daynight25.png@0,0' end;
+	if evening == 26 and gullscounter == 4 then return 'gfx/38_4.png;gfx/daynight2/daynight26.png@0,0' end;
+	if evening == 27 and gullscounter == 4 then return 'gfx/38_4.png;gfx/daynight2/daynight27.png@0,0' end;
+	if evening == 28 and gullscounter == 4 then return 'gfx/38_4.png;gfx/daynight2/daynight28.png@0,0' end;
+	if evening == 29 and gullscounter == 4 then return 'gfx/38_4.png;gfx/daynight2/daynight29.png@0,0' end;
+	if evening == 30 and gullscounter == 4 then return 'gfx/38_4.png;gfx/daynight2/daynight30.png@0,0' end;
+	if evening > 30 and gullscounter == 4 then return 'gfx/38_4.png;gfx/daynight2/daynight30.png@0,0' end;
 	end;
 	onenter = function()
 	seaseen = true;
+	end;
+	decor = function()
+	p[[Синее море простирается до горизонта.]];
+	if seegulls then p[[Вдали видны чайки, занятые поиском пищи.]] end;
+	p[[Водная стихия завораживает. Все герои человеческого эпоса, вероятно, сейчас плавают там, мужественно сражаясь за жизнь... Моряки, пираты, капитаны и матросы... 
+К берегу пришвартована лодка.]];
 	end;
 	way = { path{'К дубу', 'indub'} };
 }
