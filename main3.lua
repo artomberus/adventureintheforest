@@ -18,8 +18,8 @@ require "sprite"
 require "snapshots"
 game.act = 'Не работает.';
 game.use = function ()
-	return p(phrases[rnd(#phrases)])
-	end
+	return p(phrases[rnd(#phrases)]);
+	end;
 
 game.inv = 'Зачем мне это?';
 xact.walk = walk
@@ -33,6 +33,27 @@ exit = function()
 	pleasedrink = false;
 	pleaseeat = false;
 	end;
+
+ managesound = function()
+	if not clickmute then snd.play('snd/click.wav', 1) end;
+	clickmute = false; 
+ end;
+
+-- sn = function()
+-- snd.play('snd/click.wav', 1);
+-- end;
+
+ game.afteract = managesound;
+ game.afterinv = managesound;
+ -- game.afterwalk = managesound;
+ -- game.onact = function()
+ --	if not clickmute then snd.play('snd/click.wav', 2) end;
+ --	clickmute = false; 
+ -- end;
+ game.oninv = managesound;
+ game.onuse = managesound;
+ game.onwalk = managesound;
+ game.ontak = managesound;
 
 global 'bg_name' ('gfx/bg.png')
 
@@ -75,6 +96,7 @@ global { -- Вариации "не получится".
 global { -- Много разных переменных. В основном логические. На них построена вся игра.
 	wr = 0; -- Переменная, в которой считаем прогресс.
 	max = 20; -- Когда wr достигнет значения max, игрок дойдет до финиша.
+	clickmute = false; -- переключатель звука клика
 	stonebreak = false; -- Укатил ли камень.
 	havelopata = false; -- Взял ли лопату.
 	havevedro = false; -- Взял ли ведро.
@@ -343,7 +365,8 @@ obj {
 
 	used = function (s, w)
 	if w^'fonarik' then
-	p [[Ты зачем-то посветил на дверь при свете дня, и лишний раз убедился, что без ключа замок не открыть.]] return
+	p [[Ты зачем-то посветил на дверь при свете дня, и лишний раз убедился, что без ключа замок не открыть.]] -- sn();
+	return
 	elseif w^'topor' and not openedwithkey then
 	p [[Ты изрубил дверь топором, сделать это было легко. Старые трухлявые доски разлетелись в стороны. Путь открыт. Ну ты и варвар! Сюда же теперь будет попадать дождь, снег...]] evil = evil+1; snd.play('snd/axe.ogg', 1) enable '#door' brokenwithtopor = true wr = wr+1; return
 	elseif w^'topor' and openedwithkey then
@@ -474,6 +497,7 @@ obj {
 	nam = 'fonarik';
 	disp = fmt.img('gfx/inv/fonarik.png')..'Фонарик';
 	inv = function()
+	clickmute = true;
 	if isusercozel then p 'Ты попробовал взять фонарик в зубы, но это не очень хорошо получилось) Увы и ах.' waycounter = waycounter+1 snd.play('snd/sheep.ogg', 1) else p 'Привычка держать в кармане маленький китайский динамо-фонарь на этот раз оказалась очень даже кстати.' end
 	end;
 }
@@ -531,9 +555,9 @@ obj {
   act = function(s)
       if ( have('рыболовные снасти') or have('udochka_with_chervi') or have('udsobr') ) then p [[Комод пуст.]]
 	elseif closed(s) then
-          open(s) snd.play('snd/drawer.ogg', 1)
+          open(s) snd.play('snd/drawer.ogg', 1) 
       else
-         close(s) snd.play('snd/drawer.ogg', 1)
+         close(s) snd.play('snd/drawer.ogg', 1) 
 	close(s)
      end
  end;
@@ -3505,6 +3529,10 @@ room {
 obj {
 	nam = 'podvinut';
 	act = function()
-	if not zanaveskaopen then zanaveskaopen = true else zanaveskaopen = false end
+	clickmute = true;
+	snd.play ('snd/zanaveska.ogg', 1);
+	zanaveskaopen = not zanaveskaopen;
+--	if not zanaveskaopen then zanaveskaopen = true else zanaveskaopen = false end
+
 	end;
 }

@@ -23,18 +23,20 @@
 -
 ------------------------------------------------------------------------------------------
 Кроме файлов:
-axe.wav
-leskaiudochka.wav
-zatochil.wav
-zakinul.wav
-sheep.wav
-roundkozel.wav
-horse.wav
-gallop.wav
-goodbyehorse.wav
-drinkwater.wav
-eatkolobok.wav
-vedroinkolodec.wav
+axe.ogg
+leskaiudochka.ogg
+zatochil.ogg
+zakinul.ogg
+sheep.ogg
+roundkozel.ogg
+horse.ogg
+gallop.ogg
+goodbyehorse.ogg
+drinkwater.ogg
+eatkolobok.ogg
+vedroinkolodec.ogg
+zanaveska.ogg
+
 Они взяты отсюда - https://www.zapsplat.com
 Лицензия - https://www.zapsplat.com/license-type/standard-license/
 
@@ -103,10 +105,10 @@ Limitation of Liability
 The Licensee agrees that Zapsplat.com holds no liability with regards to any claims made in relation to this agreement.
 ----------------------------------------------------------------------------
 Файлы:
-breath.wav
-breath2.wav
-breath3.wav
-breath4.wav
+breath.ogg
+breath2.ogg
+breath3.ogg
+breath4.ogg
 Распространяются на условиях лицензии CC Attribution 4.0 International License
 
 License: CC Attribution 4.0 International License
