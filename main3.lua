@@ -1464,6 +1464,7 @@ room {
 	exit = function()
 	if inroom ( me() ) == 'inhouse' then snd.music 'mus/HouseOfEvil.ogg' else snd.music 'mus/Atlantis.ogg' end
 	isusercozel = false;
+	if twopress and threepress then clickmute = true; snd.play('snd/roundkozel.ogg', 1) end;
 	end;
 	obj = {'onering', 'tworing', 'threering'};
 }
@@ -1471,20 +1472,20 @@ obj {
 	nam = 'onering';
 	act = function()
 	twopress = true
-	if not onepress then p [[Ты перевернулся через голову. Это непривычно. Зато подумай - никто из людей не переживал подобное. Хотя козлов много)]] snd.play('snd/roundkozel.ogg', 1) onepress = true end
+	if not onepress then p [[Ты перевернулся через голову. Это непривычно. Зато подумай - никто из людей не переживал подобное. Хотя козлов много)]] clickmute = true; snd.play('snd/roundkozel.ogg', 1) onepress = true end
 	end;
 }
 obj {
 	nam = 'tworing';
 	act = function()
 	if twopress then threepress = true end
-	if not twocheck and twopress then  p [[Ты второй раз сделал кувырок и опустился на свои четыре. Ухх!]] snd.play('snd/roundkozel.ogg', 1) twocheck = true end
+	if not twocheck and twopress then  p [[Ты второй раз сделал кувырок и опустился на свои четыре. Ухх!]] clickmute = true; snd.play('snd/roundkozel.ogg', 1) twocheck = true end
 	end;
 }
 obj {
 	nam = 'threering';
 	act = function()
-	if twopress and threepress then p [[Ура! Ты снова человек. Что это вообще было? Странная водичка. Лучше не пить больше из водоемов, от греха подальше.]] vedrowithwater = false snd.play('snd/roundkozel.ogg', 1) walk ( from() ) end
+	if twopress and threepress then p [[Ура! Ты снова человек. Что это вообще было? Странная водичка. Лучше не пить больше из водоемов, от греха подальше.]] vedrowithwater = false walk ( from() ) end
 	end;
 }
 
