@@ -555,9 +555,9 @@ obj {
   act = function(s)
       if ( have('рыболовные снасти') or have('udochka_with_chervi') or have('udsobr') ) then p [[Комод пуст.]]
 	elseif closed(s) then
-          open(s) snd.play('snd/drawer.ogg', 1) 
+          open(s) clickmute = true snd.play('snd/drawer.ogg') 
       else
-         close(s) snd.play('snd/drawer.ogg', 1) 
+         close(s) clickmute = true snd.play('snd/drawer.ogg') 
 	close(s)
      end
  end;
@@ -710,7 +710,7 @@ obj { -- озеро
 		p [[И удобно так рыбачить, держа в одной руке ведро, полное воды, а в другой удочку?]] return
 		elseif (w^'udochka_with_chervi' and vedrostand and frsttime ) then p[[Наконец-то! Ты закинул удочку в озеро. Через некоторое время тебе показалось, что поплавок задергался. Ты потянул за удочку, но выловил только листик какого-то ненужного тебе растения. Может, стоит попытаться снова? ]] frsttime = false snd.play('snd/zakinul.ogg', 1) wr=wr+1 return
 		elseif (w^'udochka_with_chervi' and vedrostand and scndtime ) then p[[Ты второй раз закинул удочку. Долго сидел, выжидал. Наконец, увидел - клюет! Ты аккуратно, правильным движением подкосил удочку, и... снова неудача. Да что же такое? ]] scndtime = false snd.play('snd/zakinul.ogg', 1) wr=wr+1 return
-		elseif (w^'udochka_with_chervi' and vedrostand and thrdtime ) then snd.play('snd/zakinul.ogg', 1) walk 'goldfishdlg' wr=wr+1 return
+		elseif (w^'udochka_with_chervi' and vedrostand and thrdtime ) then clickmute = true snd.play('snd/zakinul.ogg', 1) walk 'goldfishdlg' wr=wr+1 return
 		elseif w^'key' then
 		p [[Глупо выбрасывать ключ, он еще пригодится.]] return
 		elseif w^'vedrofull' then
@@ -843,6 +843,8 @@ dlg {
 	end;
 	exit = function()
 	snd.music 'mus/Atlantis.ogg' bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+	clickmute = true;
+	snd.play('snd/awaterplouffff.ogg');
 end;
 	phr = { -- открыл диалог
 		{'Невод? Какой невод?', '-- Ты сказки в детстве читал? Старик был один, добрый, но старуху слушался... Пошел он однажды в море, закинул невод... один раз закинул, второй... А на третий словил меня. А я чудеса творить умею. Силы морские, да и всей Земли, подвластны мне. Не потому, что я царица морская, а потому, что у природы всё едино... Та история закончилась не очень хорошо. Хотя старик и не виноват ни в чем. Но вот сейчас я снова на берегу -- поэтому и спрашиваю -- где твой невод? Что за варварские методы нынче пошли? Рыба тоже чело... рыба. Рыба тоже живое существо.',
@@ -860,7 +862,7 @@ end;
 								{'Какой путь? Где я?', '-- Ты в лесу. Но он не простой. Волшебство создано людьми. Не мы установили правила, но мы им подчиняемся. Многие из нас страдают.',
 									{'От чего?','-- Баланс сил нарушен. Зло есть лишь в мире людей... Но вы привнесли зло в мир природы. Ваши мифы начали менять нас, наши жизни. Вы очень нелепо воспринимаете это, как байки, как что-то абсурдное. А мы существуем, причем столько же, сколько и вы сами. Меняются поколение за поколением, а ваши представления о мире духов, мире природы, мире животных -- остаются первобытными. Да, вы пытаетесь показывать этими историями мораль, но кто-то при этом все равно страдает. Так не должно быть. Впрочем... Об этом не рассказать. Ты все увидишь сам!',
 										{'Куда ты?','Мне пора. Мы еще встретимся. Помни -- ты должен творить добро. Только тогда обретешь успех. Когда море высохло, я вынуждена была жить в этом маленьком озере. Иначе же от вас, людей, просто не скрыться. Ты думаешь, тебе повезло, что поймал меня? Нет... Силы природы решили мою роль в этой истории. Как и твою. Путь -- неизбежен. Но его финал зависит только от тебя. Удачи тебе, добрый молодец. Ты лучший из своего народа, уж нам-то -- в лице птиц, животных и растений -- это известно: мы повсюду. Не подведи человечество. Помни - все твои поступки оцениваются и взвешиваются. До встречи.',
-											{'А как же я... Я голоден! Спаси! Накорми хоть! Я умру!!!','-- Ты можешь найти все необходимое по пути. Поверь, никто не собирается тебя убивать. Слушай то, что подсказывает тебе сердце -- и найдешь выход. Я сделала кое-что для тебя. Теперь ты можешь продолжать идти вперед. Все поймешь на месте. Удачи.', {'Рыбка!!!', function() holeway = true; remove('udochka_with_chervi') place('holeopened', 'leftway') p[[Ты не успел моргнуть и глазом, как рыбка плюхнулась в воду и умчалась прочь. "Я сделала кое-что для тебя" - сказала рыбка. Что она имела в виду?]] snd.play('snd/awaterplouffff.ogg', 1) end };
+											{'А как же я... Я голоден! Спаси! Накорми хоть! Я умру!!!','-- Ты можешь найти все необходимое по пути. Поверь, никто не собирается тебя убивать. Слушай то, что подсказывает тебе сердце -- и найдешь выход. Я сделала кое-что для тебя. Теперь ты можешь продолжать идти вперед. Все поймешь на месте. Удачи.', {'Рыбка!!!', function() holeway = true; remove('udochka_with_chervi') place('holeopened', 'leftway') p[[Ты не успел моргнуть и глазом, как рыбка плюхнулась в воду и умчалась прочь. "Я сделала кое-что для тебя" - сказала рыбка. Что она имела в виду?]] end };
 											}, -- закрыл десятую фразу
 										}, -- закрыл девятую фразу
 									}, -- закрыл восьмую фразу
@@ -1373,6 +1375,7 @@ obj {
 obj {
 	nam = 'horse';
 	act = function()
+	clickmute = true;
 	snd.play('snd/horse.ogg', 1)
 	p [[Конь появился здесь, как только ты переступил через мост. Он молча смотрит на тебя, иногда пощипывая травку.]]; 		if not talkedwithhorse then p [[{tohorse|Подойти} к нему?]] else p [[Конь ждёт твоего решения. Видно, что он взволнован.]] end;	
 	end;
@@ -1692,9 +1695,9 @@ obj {
 	if drinkedwaterinkolodets and not waterpoisoned  then p [[Ты же лопнешь, деточка!]] end
 	if drinkedwaterinkolodets and waterpoisoned and not specialcase then p [[Ещё глоток этой дряни - и ты не жилец. Не стоит оно того.]] end
 	if drinkedwaterinkolodets and waterpoisoned and specialcase then p [[Ты же лопнешь, деточка!]] end
-	if not drinkedwaterinkolodets and not waterpoisoned then p [[Наконец-то! Ты жадно выпил пол ведра воды. Ну, может меньше. Но показалось, что пол ведра.]] snd.play('snd/drinkwater.ogg', 1) drinkedwaterinkolodets = true end
-	if not drinkedwaterinkolodets and waterpoisoned and not specialcase then p [[Ты закрыл нос рукой. Попытался выпить эту жуткую воду. Тебя чуть не стошнило. Но жажда оказалась сильнее чувства отвращения. И всё же не стоит больше делать подобное. Лекарств у тебя нет...]] snd.play('snd/drinkwater.ogg', 1) drinkedwaterinkolodets = true end
-	if not drinkedwaterinkolodets and waterpoisoned and specialcase then p [[Наконец-то! Ты жадно выпил пол ведра воды. Ну, может меньше. Но показалось, что пол ведра.]] snd.play('snd/drinkwater.ogg', 1) drinkedwaterinkolodets = true end
+	if not drinkedwaterinkolodets and not waterpoisoned then p [[Наконец-то! Ты жадно выпил пол ведра воды. Ну, может меньше. Но показалось, что пол ведра.]] clickmute = true snd.play('snd/drinkwater.ogg', 1) drinkedwaterinkolodets = true end
+	if not drinkedwaterinkolodets and waterpoisoned and not specialcase then p [[Ты закрыл нос рукой. Попытался выпить эту жуткую воду. Тебя чуть не стошнило. Но жажда оказалась сильнее чувства отвращения. И всё же не стоит больше делать подобное. Лекарств у тебя нет...]] clickmute = true snd.play('snd/drinkwater.ogg', 1) drinkedwaterinkolodets = true end
+	if not drinkedwaterinkolodets and waterpoisoned and specialcase then p [[Наконец-то! Ты жадно выпил пол ведра воды. Ну, может меньше. Но показалось, что пол ведра.]] clickmute = true snd.play('snd/drinkwater.ogg', 1) drinkedwaterinkolodets = true end
 	end;
 	used = function(n,z)
 	if z^'topor' then p[[Ударим топором по глаголу?]] end
@@ -3105,15 +3108,22 @@ obj {
 		if z^'pivo' then
 		p [[Не время расслабляться, товарищ.]]; return -- куда спешишь товарищ, не время для потехи
 		elseif z^'kuvshinzpivom' then
-		p [[Не время расслабляться!]]; return
-		elseif z^'kuvshin' or z^'kuvshin2' and not have('pivo') and not have('nopivo') then
-		p [[Пустой кувшин даже на столе останется пустым кувшином...]]; return
-		elseif z^'kuvshin' or z^'kuvshin2' and have('pivo') and not have('nopivo') then
+		p [[Не время расслабляться!]]; return end;
+		if z^'kuvshin' and have('pivo') and not have('nopivo') then
 		p [[Ты поставил кувшин на столик. Теперь можно легко перелить в него пиво.]]; kuvshinontable = true; 
 		if have('kuvshin') then remove('kuvshin') end; if have('kuvshin2') then remove('kuvshin2') end;
-		return
+		return end;
+		if z^'kuvshin'and not have('pivo') and not have('nopivo') then
+		p [[Пустой кувшин даже на столе останется пустым кувшином...]]; return
 		end
-if not z^'kuvshin' or z^'kuvshin2' then return false; end
+		if z^'kuvshin2' and have('pivo') and not have('nopivo') then
+		p [[Ты поставил кувшин на столик. Теперь можно легко перелить в него пиво.]]; kuvshinontable = true; 
+		if have('kuvshin') then remove('kuvshin') end; if have('kuvshin2') then remove('kuvshin2') end;
+		return end;
+		if z^'kuvshin2'and not have('pivo') and not have('nopivo') then
+		p [[Пустой кувшин даже на столе останется пустым кувшином...]]; return
+		end
+if not z^'kuvshin' or not z^'kuvshin2' then return false; end
 	end;
 }
 
