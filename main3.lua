@@ -233,6 +233,7 @@ global { -- Много разных переменных. В основном л
 	tyvor = false; -- вор ли ты
 	needpivo = false; -- узнали ли от мельника, что нужно пиво
 	askwhere = false; -- можно спрашивать ли про то, где искать перо
+	dalvodu = false; -- особый случай, когда частично помог старику
 }
 
 stat {
@@ -1876,7 +1877,7 @@ obj {
 	elseif z^'apples' and dalwater and not firsttalkwithstarik then p [[Спасибо тебе, добрый человек! Взамен я дарю тебе скатерть-самобранку! Пусть она выручает тебя в пути. Только помни - никому не рассказывай о ней! Если проболтаешься - беда будет.]] take ('samobranka') remove('apples') haveskatert = true 
 	elseif z^'apples' and not dalwater and not firsttalkwithstarik then  p [[-- Спасибо тебе, добрый человек! Теперь я молод. Но глаза мои по-прежнему больны... Только живая вода может излечить их и вернуть мне возможность видеть этот мир!]] dalapples = true remove('apples') -- end
 	elseif z^'apples' and firsttalkwithstarik then p [[Ты бы поговорил сначала с человеком...]]
-	elseif z^'kuvshinwithwater' and dalapples then p [[-- Спасибо тебе, добрый человек! Взамен я дарю тебе скатерть-самобранку! Пусть она выручает тебя в пути. Только помни - никому не рассказывай о ней! Если проболтаешься - беда будет.]] take ('samobranka') remove('kuvshinwithwater') haveskatert = true elseif z^'kuvshinwithwater' and not dalapples then p [[Старик умыл глаза водой из кувшина. ^-- Спасибо тебе, добрый человек! Теперь я могу хорошо видеть. Но я ведь по-прежнему стар! Найди молодильные яблоки.]] dalwater = true remove('kuvshinwithwater') end
+	elseif z^'kuvshinwithwater' and dalapples then p [[-- Спасибо тебе, добрый человек! Взамен я дарю тебе скатерть-самобранку! Пусть она выручает тебя в пути. Только помни - никому не рассказывай о ней! Если проболтаешься - беда будет.]] take ('samobranka') remove('kuvshinwithwater') haveskatert = true elseif z^'kuvshinwithwater' and not dalapples then p [[Старик умыл глаза водой из кувшина. ^-- Спасибо тебе, добрый человек! Теперь я могу хорошо видеть. Но я ведь по-прежнему стар! Найди молодильные яблоки.]] dalwater = true dalvodu = true remove('kuvshinwithwater') end
 	end;
 };
 
@@ -2791,7 +2792,9 @@ obj {
 	if haveskatert then kuvshintakedfromstarik = false; end;
 	if takkuvshin2 and not kuvshintakedfromstarik  then p [[Дупло старого, могучего дерева. Пустое.]] end;
 	if not takkuvshin2 and not kuvshintakedfromstarik then p [[В дупле ты нашел пустой, но целый кувшин!]] take('kuvshin2') takkuvshin2 = true; end;
-	if kuvshintakedfromstarik then p [[Увы... На этот раз пусто.]] end;
+	if kuvshintakedfromstarik and not dalvodu then p [[Увы... На этот раз пусто.]] end;
+	if kuvshintakedfromstarik and dalvodu and not takkuvshin2 then p [[В дупле ты нашел пустой, но целый кувшин!]] take('kuvshin2') takkuvshin2 = true; end;
+	if kuvshintakedfromstarik and dalvodu and takkuvshin2 then p [[Дупло старого, могучего дерева. Пустое.]] end;
 	end;
 }
 
@@ -2934,7 +2937,7 @@ dlg {
 		},
 
 		{ cond = function() return askwhere == true and not have('pero') end, 'А где его искать-то, перо жар-птицы?','-- Она часто появляется возле дуба, что за мельницей. К сожалению, у меня нет времени подсиживать её. Может, тебе удастся поймать момент...',
-			{'А зачем оно вам?', function() p'-- Знаю одного доброго молодца, который ищет его. Обменяю перо на что-то ценное.' end
+			{'А зачем оно вам?', function() p'-- Знаю одного доброго молодца, который ищет его. Обменяю перо на кое-что ценное.' end
 			}
 		},
 
