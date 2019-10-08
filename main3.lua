@@ -43,6 +43,10 @@ exit = function()
 -- snd.play('snd/click.wav', 1);
 -- end;
 
+test = function() -- включаю её, когда надо отследить, где добавился опыт
+--	p'+EXP';
+end;
+
  game.afteract = managesound;
  game.afterinv = managesound;
  -- game.afterwalk = managesound;
@@ -151,6 +155,7 @@ global { -- Много разных переменных. В основном л
 	lestnicastand = false; -- поставил ли лестницу у дерева
 	cantdothat = false; -- попробовал ли собрать яблоки
 	belkaishere = false; -- явилась ли белка, хе-хе
+	belkaseen = false; -- видел ли белку
 	waytohouseback = false; -- путь к обратной стороне хижины закрыт
 	onceopened = false; -- метка открытия обратного пути к хижине. когда тру - больше не вызываем диалог с белкой.
 	wow = false; -- сказал ли вау, когда увидел лестницу
@@ -369,11 +374,11 @@ obj {
 	p [[Ты зачем-то посветил на дверь при свете дня, и лишний раз убедился, что без ключа замок не открыть.]] -- sn();
 	return
 	elseif w^'topor' and not openedwithkey then
-	p [[Ты изрубил дверь топором, сделать это было легко. Старые трухлявые доски разлетелись в стороны. Путь открыт. Ну ты и варвар! Сюда же теперь будет попадать дождь, снег...]] evil = evil+1; snd.play('snd/axe.ogg', 1) enable '#door' brokenwithtopor = true wr = wr+1; return
+	p [[Ты изрубил дверь топором, сделать это было легко. Старые трухлявые доски разлетелись в стороны. Путь открыт. Ну ты и варвар! Сюда же теперь будет попадать дождь, снег...]] evil = evil+1; snd.play('snd/axe.ogg', 1) enable '#door' brokenwithtopor = true wr = wr+1; test(); return
 	elseif w^'topor' and openedwithkey then
 	p [[Ты зачем-то сломал дверь, хотя она была открыта, и не было необходимости делать это. Ну ты и варвар! Сюда же теперь будет попадать дождь, снег...]] evil = evil+1; snd.play('snd/axe.ogg', 1) brokenwithtopor = true return
 	elseif w^'key' and not brokenwithtopor then
-	p [[Замок скрипнул, захрустел, но поддался. Ты открыл дверь.]] good = good+1; snd.play('snd/key_door.ogg', 1) openedwithkey = true; wr = wr+1;
+	p [[Замок скрипнул, захрустел, но поддался. Ты открыл дверь.]] good = good+1; snd.play('snd/key_door.ogg', 1) openedwithkey = true; wr = wr+1; test();
 	enable '#door'
 	remove ('key')
 	return
@@ -426,7 +431,7 @@ obj {  -- Дупло.
 	p [[Зачем возвращать ключ в дупло?]] return
 	elseif w^'fonarik' then
 	p [[Ты посветил фонариком. Оттуда внезапно выскочила белка и убежала. Ты пожалел, что испугал бедное животное. Но что теперь поделать. В дупле лежал... ключ.]] snd.play('snd/SQ2.ogg', 1)
-	take('key') touchedkey = true; if not touchedtopor then wr = wr+1 end;
+	take('key') touchedkey = true; if not touchedtopor then wr = wr+1; test(); end;
 	remove('fonarik')
 	return
 	end
@@ -506,6 +511,7 @@ obj {
 	nam = 'key';
 	disp = fmt.img('gfx/inv/key.png')..'Ключ';
 	inv = function()
+	clickmute = true;
 	if isusercozel then p 'И зачем он теперь тебе?' waycounter = waycounter+1 snd.play('snd/sheep.ogg', 1) elseif brokenwithtopor then p 'Теперь он тебе не нужен. Ты же поспешил, начал все крушить, ломать!' else p 'Старый, большой ключ.' end
 	end;
 }
@@ -514,10 +520,11 @@ obj {
 	disp = fmt.img('gfx/inv/lopata.png')..'Лопата';
 	dsc = 'Возле окна стоит {lopata|лопата}.';
 	inv = function()
+	clickmute = true;
 	if isusercozel then p 'Ты даже копать теперь не можешь! Какое горе...' waycounter = waycounter+1 snd.play('snd/sheep.ogg', 1) else p 'Обычная, хотя и ржавая уже, лопата. Но копать еще можно.' end
 	end;
 	tak = function (k)
-	p [[Ты взял лопату.]]; wr = wr+1; havelopata = true;
+	p [[Ты взял лопату.]]; wr = wr+1; test(); havelopata = true;
 	return
 	end;
 }
@@ -527,15 +534,16 @@ obj {
   dsc = [[В комоде есть {рыболовные снасти}.]];
   disp = fmt.img('gfx/inv/leska.png')..'Снасти';
    inv = function()
+	clickmute = true;
 	if isusercozel then p 'Смотри, не изрань мордочку!' waycounter = waycounter+1 snd.play('snd/sheep.ogg', 1) else p 'Рыболовные снасти. Леска для удочки, крючки, поплавок.' end
 	end;
    tak = function (k)
-	p [[Ты взял рыболовные снасти.]]; wr = wr+1;
+	p [[Ты взял рыболовные снасти.]]; wr = wr+1; test();
 	return
 	end;
    used = function (n, z)
 	if z^'udochka' then
-	p [[Ты собрал удочку.]]; wr = wr+1; snd.play('snd/leskaiudochka.ogg', 1)
+	p [[Ты собрал удочку.]]; wr = wr+1; test(); snd.play('snd/leskaiudochka.ogg', 1)
 	take ('udsobr')
 	remove ('рыболовные снасти') remove ('udochka')
 	return
@@ -572,10 +580,11 @@ obj {
 	disp = fmt.img('gfx/inv/vedro.png')..'Ведро';
 
 	inv = function()
+	clickmute = true;
 	if isusercozel then p 'Ты утолил жажду. Но какой ценой?!' waycounter = waycounter+1 snd.play('snd/sheep.ogg', 1) else p 'Ведро из нержавеющей стали. Пустое.' end
 	end;	
 	tak = function (k)
-		p [[Ты взял ведро.]]; wr = wr+1; havevedro = true;
+		p [[Ты взял ведро.]]; wr = wr+1; test(); havevedro = true;
 		return
 	end;
 }
@@ -584,10 +593,11 @@ obj {
 	dsc = 'Над кроватью висит... {udochka|удочка}!';
 	disp = fmt.img('gfx/inv/udochka.png')..'Удочка';
 	inv = function()
+	clickmute = true;
 	if isusercozel then p 'Тебе она без надобности.' waycounter = waycounter+1 snd.play('snd/sheep.ogg', 1) else p 'Бамбуковая удочка. Давно таких не видел. Нужны снасти.' end
 	end;
 	tak = function (k)
-		p [[Ты аккуратно снял удочку.]]; wr = wr+1; haveudochka = true;
+		p [[Ты аккуратно снял удочку.]]; wr = wr+1; test(); haveudochka = true;
 		return
 	end;
 	 used = function (n, z)
@@ -596,7 +606,7 @@ obj {
 		if z^'chervi' then
 		p [[Сначала надо собрать удочку.]] return
 		elseif z^'рыболовные снасти' then
-		p [[Ты собрал удочку.]]; wr = wr+1; snd.play('snd/leskaiudochka.ogg', 1)
+		p [[Ты собрал удочку.]]; wr = wr+1; test(); snd.play('snd/leskaiudochka.ogg', 1)
 		take ('udsobr')
 		remove ('рыболовные снасти') remove ('udochka')
 		return
@@ -616,7 +626,7 @@ obj {
 end; 
 	used = function (n, z)
 	if z^'lopata' then
-		p [[Ты приложил все свои усилия и с трудом, но сумел сдвинуть валун с места. Тяжелый камень с затихающим звуком покатился вниз.  Ты принялся копать землю и вскоре собрал несколько червей.]] snd.play('snd/kamen.ogg', 1) wr = wr+1; stonebreak = true;
+		p [[Ты приложил все свои усилия и с трудом, но сумел сдвинуть валун с места. Тяжелый камень с затихающим звуком покатился вниз.  Ты принялся копать землю и вскоре собрал несколько червей.]] snd.play('snd/kamen.ogg', 1) wr = wr+1; test(); stonebreak = true;
 		disable 'valun' 
 		take 'chervi'
 		remove ('lopata')
@@ -658,6 +668,7 @@ obj {
 	nam = 'chervi';
 	disp = fmt.img('gfx/inv/chervi.png')..'Черви';
 	inv = function()
+	clickmute = true;
 	if isusercozel then p 'Ты теперь травоядное ;)' snd.play('snd/sheep.ogg', 1) else p 'Эти черви, наверное, никогда не видели солнца, пока ты их не достал.' end
 	end;
 	used = function (n, z)
@@ -672,13 +683,14 @@ obj {  --собранная удочка, вторая итерация удоч
 	nam = 'udsobr'; 
 	disp = fmt.img('gfx/inv/sobr_udochka.png')..'Удочка';
 	inv = function()
+	clickmute = true;
 	if isusercozel then p 'Тебе она без надобности. Смотри, не поранься о снасти!' waycounter = waycounter+1 snd.play('snd/sheep.ogg', 1) else p 'Пора на рыбалку? Нужна наживка.' end
 	end;
 	used = function (n, z)
 		if z^'topor' then
 		p [[Сломать единственную удочку, когда тебе угрожает смерть от голода? Оригинально! А ведь ты уже собрал ее, остался всего шаг...]] return end
 		if z^'chervi' then
-		p [[Ты аккуратно нанизал червя на крючок.]]; wr = wr+1;
+		p [[Ты аккуратно нанизал червя на крючок.]]; wr = wr+1; test();
 		take ('udochka_with_chervi')
 		remove ('udsobr') remove ('chervi')
 		return
@@ -709,15 +721,15 @@ obj { -- озеро
 		p [[А куда ты собрался девать рыбу, когда словишь ее?]] return
 		elseif (w^'udochka_with_chervi' and not vedrostand ) then
 		p [[И удобно так рыбачить, держа в одной руке ведро, полное воды, а в другой удочку?]] return
-		elseif (w^'udochka_with_chervi' and vedrostand and frsttime ) then p[[Наконец-то! Ты закинул удочку в озеро. Через некоторое время тебе показалось, что поплавок задергался. Ты потянул за удочку, но выловил только листик какого-то ненужного тебе растения. Может, стоит попытаться снова? ]] frsttime = false snd.play('snd/zakinul.ogg', 1) wr=wr+1 return
-		elseif (w^'udochka_with_chervi' and vedrostand and scndtime ) then p[[Ты второй раз закинул удочку. Долго сидел, выжидал. Наконец, увидел - клюет! Ты аккуратно, правильным движением подкосил удочку, и... снова неудача. Да что же такое? ]] scndtime = false snd.play('snd/zakinul.ogg', 1) wr=wr+1 return
-		elseif (w^'udochka_with_chervi' and vedrostand and thrdtime ) then clickmute = true snd.play('snd/zakinul.ogg', 1) walk 'goldfishdlg' wr=wr+1 return
+		elseif (w^'udochka_with_chervi' and vedrostand and frsttime ) then p[[Наконец-то! Ты закинул удочку в озеро. Через некоторое время тебе показалось, что поплавок задергался. Ты потянул за удочку, но выловил только листик какого-то ненужного тебе растения. Может, стоит попытаться снова? ]] frsttime = false snd.play('snd/zakinul.ogg', 1) wr=wr+1; test(); return
+		elseif (w^'udochka_with_chervi' and vedrostand and scndtime ) then p[[Ты второй раз закинул удочку. Долго сидел, выжидал. Наконец, увидел - клюет! Ты аккуратно, правильным движением подкосил удочку, и... снова неудача. Да что же такое? ]] scndtime = false snd.play('snd/zakinul.ogg', 1) wr=wr+1; test(); return
+		elseif (w^'udochka_with_chervi' and vedrostand and thrdtime ) then clickmute = true snd.play('snd/zakinul.ogg', 1) walk 'goldfishdlg' wr=wr+1; test(); return
 		elseif w^'key' then
 		p [[Глупо выбрасывать ключ, он еще пригодится.]] return
 		elseif w^'vedrofull' then
 		p [[В ведре уже есть вода.]] return
 		elseif w^'vedro' then
-		p [[Аккуратно нагнувшись, чтобы не упасть, ты набрал в ведро воды из озера.]] vedrowithwater = true snd.play('snd/awaterlap.ogg', 1) if firstfill then wr = wr+1 firstfill = false end
+		p [[Аккуратно нагнувшись, чтобы не упасть, ты набрал в ведро воды из озера.]] vedrowithwater = true snd.play('snd/awaterlap.ogg', 1) if firstfill then wr = wr+1; test(); firstfill = false end
 		take ('vedrofull')
 		remove ('vedro')
 		return
@@ -796,6 +808,7 @@ obj { -- удочка с нанизанным червем - третья ите
 	nam = 'udochka_with_chervi';
 	disp = fmt.img('gfx/inv/udochkawithchervi.png')..'Удочка';
 	inv = function()
+	clickmute = true;
 	if isusercozel then p 'Тебе она без надобности. Смотри, не поранься о снасти! И оставь червя в покое! Брр...' waycounter = waycounter+1 snd.play('snd/sheep.ogg', 1) else p 'Ловись, рыбка, большая и маленькая!' end
 	end;
 	used = function (n, z)
@@ -816,7 +829,7 @@ obj { -- берег озера
 		elseif (z^'udochka_with_chervi' or z^'udochka' or z^'udsobr') then
 		p [[Бросить отличную удочку на берег? Зачем?]] return
 		elseif z^'vedrofull' then
-		p [[Ты поставил ведро на берегу озера.]] place('vedrofull', 'rightway') vedrostand = true wr = wr+1
+		p [[Ты поставил ведро на берегу озера.]] place('vedrofull', 'rightway') vedrostand = true wr = wr+1; test();
 		return
 		end
 	return false;
@@ -901,7 +914,7 @@ room {
 	if not voronainriver and not have('vorona') and voronaonmost then p [[{kto|На мосту} {vorona|ворона} сохнет.]] end;
 	if not voronainriver and not have('vorona') and not voronaonmost then p [[{takreka|Под мостом} {vorona|ворона} мокнет.]] end;
 	if voronainriver then p [[Здесь больше ничего нет. Ты сделал хорошее дело. Можно идти {@ walk threeways|дальше}.]] end;
-	if voronawasininv and not countedvorona then wr = wr+1 countedvorona = true end;
+	if voronawasininv and not countedvorona then wr = wr+1; test(); countedvorona = true end;
 	if voronawasininv and not have('vorona') and not voronainriver then p [[Ты можешь идти {@ walk threeways|дальше} или подумать еще.]] end;
 	end;
 	obj = {'river', 'takreka', 'kto', 'onmost', 'podmost', 'vorona'};
@@ -911,11 +924,14 @@ room {
 	nam = 'trees';
 	title = 'Говорящие деревья';
 	enter = function() if waytohouseback then enable '#waytooutside' end;
-		if firstintrees then wr = wr+1 soglasen = true end snd.music 'mus/LegendsOfTheRiver.ogg' if have 'key' then p [[Ты потерял ключ в траве... Он выпал, а ты и не заметил.]]; remove('key'); end
-	if not touchedkey and not belkaincremented then wr = wr+1 belkaincremented = true end; -- если не касался дупла и не видел белку - при заходе к деревьям выравниваем прогресс. Да, костыльно. Но как умею(
+		if firstintrees then wr = wr+1; test(); soglasen = true end snd.music 'mus/LegendsOfTheRiver.ogg' if have 'key' then p [[Ты потерял ключ в траве... Он выпал, а ты и не заметил.]]; remove('key'); end
+	if not touchedkey and not belkaincremented then wr = wr+1; test(); belkaincremented = true end; -- если не касался дупла и не видел белку - при заходе к деревьям выравниваем прогресс. Да, костыльно. Но как умею(
 	end;
-	onexit = function()
-	if izrubilappletrees then wr = wr+3 end; -- компенсация прогресса, если изрубил деревья
+	onexit = function(s, t)
+--	if t^'houseoutside' then p 'комната с лестницой' end;
+	if izrubilappletrees and not belkaseen and not t^'houseoutside' then wr = wr+4 test() end; -- компенсация прогресса, если изрубил деревья
+	if izrubilappletrees and belkaseen and not lestntaken and not t^'houseoutside' then wr = wr+3 test() end;
+	if izrubilappletrees and belkaseen and lestntaken and not t^'houseoutside' then wr = wr+2 test() end;
 	end;
 	pic = function()
 	if izrubilappletrees and not sobralapples then return 'gfx/12afteraxe.png' end;
@@ -978,7 +994,7 @@ dlg {
 					{'Слушай, помоги, а? Мне надо продолжать путь, но деревья отказываются пропускать, если не соберу их яблоки. Другого прохода нет, а яблоки я не достаю... Мне нужно на что-то стать, чтобы подняться повыше. Но что я могу найти здесь, в лесу...','-- Ой. Так уж и быть, помогу тебе. Тем более, все наслышаны о миссии. Спасти человечество! Это не мелочь какая-нибудь...',
 						{'Почему все знают больше, чем я?','-- А как ты хотел? Только трудный путь покажет, на что ты способен. А ведь на тебя смотрит весь мир природы!',
 							{'Ладно, не нагнетай! Сам боюсь. Итак, что ты говорила о помощи?','-- Посмотри за хижиной. Там есть то, что ты ищешь.',
-								{'Спасибо, но...', function()p 'Белка убежала, словно ее никогда и не было.' waytohouseback = true belkaishere = false onceopened = true wr = wr+1 walk 'trees' end }
+								{'Спасибо, но...', function()p 'Белка убежала, словно ее никогда и не было.' waytohouseback = true belkaishere = false onceopened = true belkaseen = true wr = wr+1; test(); walk 'trees' end }
 							},
 						},
 					},
@@ -988,7 +1004,7 @@ dlg {
 					{'Помоги, белочка, хорошая. Мне надо продолжать путь, но деревья отказываются пропускать, если не соберу их яблоки. Другого прохода нет, а яблоки я не достаю... Мне нужно на что-то стать, чтобы подняться повыше. Но что я могу найти здесь, в лесу...','-- Ой. Так уж и быть, помогу тебе. Тем более, все наслышаны о миссии. Спасти человечество! Это не мелочь какая-нибудь...',
 						{'Почему все знают больше, чем я?','-- А как ты хотел? Только трудный путь покажет, на что ты способен. А ведь на тебя смотрит весь мир природы!',
 							{'Знаю. Самому страшно. Но что ты говорила о помощи?','-- Посмотри за хижиной. Там есть то, что ты ищешь.',
-								{'Спасибо, но...', function() p 'Белка убежала, словно ее никогда и не было.' waytohouseback = true belkaishere = false onceopened = true wr = wr+1 walk 'trees' end }
+								{'Спасибо, но...', function() p 'Белка убежала, словно ее никогда и не было.' waytohouseback = true belkaishere = false onceopened = true belkaseen = true wr = wr+1; test(); walk 'trees' end }
 							},
 						},
 					},
@@ -1020,7 +1036,7 @@ dlg {
 					{'Слушай, помоги, а? Мне надо продолжать путь, но деревья отказываются пропускать, если не соберу их яблоки. Другого прохода нет, а яблоки я не достаю... Мне нужно на что-то стать, чтобы подняться повыше. Но что я могу найти здесь, в лесу...','-- Ой. Так уж и быть, помогу тебе. Тем более... спасти человечество! Это не мелочь какая-нибудь... Да и деревья заслуживают лучшей участи. Вы, люди, для того и созданы, чтобы помогать природе. А не разрушать ее...',
 						{'Почему все знают больше, чем я?','-- А как ты хотел? Только трудный путь покажет, на что ты способен. А ведь на тебя смотрит весь мир природы!',
 							{'Ладно, не нагнетай! Сам боюсь. Итак, что ты говорила о помощи?','-- Посмотри за хижиной. Там есть то, что ты ищешь.',
-								{'Спасибо, но...', function()p 'Белка убежала, словно ее никогда и не было.' waytohouseback = true belkaishere = false onceopened = true walk 'trees' end }
+								{'Спасибо, но...', function()p 'Белка убежала, словно ее никогда и не было.' waytohouseback = true belkaishere = false onceopened = true belkaseen = true walk 'trees' end }
 							},
 						},
 					},
@@ -1030,7 +1046,7 @@ dlg {
 					{'Да, помоги, белочка, хорошая! Мне надо продолжать путь, но деревья отказываются пропускать, если не соберу их яблоки. Другого прохода нет, а яблоки я не достаю... Мне нужно на что-то стать, чтобы подняться повыше. Но что я могу найти здесь, в лесу...','-- Так уж и быть, помогу тебе. Тем более, все наслышаны о миссии. Спасти человечество! Это не мелочь какая-нибудь...',
 						{'Почему все знают больше, чем я?','-- А как ты хотел? Только трудный путь покажет, на что ты способен. А ведь на тебя смотрит весь мир природы!',
 							{'Знаю. Самому страшно. Но что ты говорила о помощи?','-- Посмотри за хижиной. Там есть то, что ты ищешь.',
-								{'Спасибо, но...', function() p 'Белка убежала, словно ее никогда и не было.' waytohouseback = true belkaishere = false onceopened = true walk 'trees' end }
+								{'Спасибо, но...', function() p 'Белка убежала, словно ее никогда и не было.' waytohouseback = true belkaishere = false onceopened = true belkaseen = true walk 'trees' end }
 							},
 						},
 					},
@@ -1058,7 +1074,7 @@ obj {
 	p 'Ты взял топор.';
 	remove ('топор');
 	touchedtopor = true;
-	take 'topor'; if not touchedkey then wr = wr+1 end;
+	take 'topor'; if not touchedkey then wr = wr+1; test(); end;
 	else
 	s.seen = true;
 	p 'Гм... Это же топор!';
@@ -1070,6 +1086,7 @@ obj {
 	nam = 'topor'; -- топор в инвентаре
 	disp = fmt.img('gfx/inv/topor.png')..'Топор';
 	inv = function()
+	clickmute = true;
 	if isusercozel and not removetopor then p 'Орудие казни... Гены предыдущих поколений козликов отозвались в тебе глубинным, животным ужасом, при виде этого предмета.' waycounter = waycounter+1 snd.play('snd/sheep.ogg', 1) elseif not removetopor then p 'Неплохой топор, старинного образца. Откуда он здесь?' end
 	if removetopor then p'Ты выбросил топор. Хорошая вещь, но добраться до деревни важнее...' remove('topor') walk('longroad22') end;
 	end;
@@ -1083,7 +1100,7 @@ obj {
 	end;
 	used = function (n, z)
 		if z^'fonarik' then p [[Зачем светить посреди белого дня на деревья?]] end;
-		if z^'lestninv' and not izrubilappletrees then p [[Ты поставил лестницу к одному из деревьев. Теперь можно собирать яблоки.]] lestnicastand = true remove('lestninv') wr = wr+1 end;
+		if z^'lestninv' and not izrubilappletrees then p [[Ты поставил лестницу к одному из деревьев. Теперь можно собирать яблоки.]] lestnicastand = true remove('lestninv') wr = wr+1; test(); end;
 		if z^'lestninv' and izrubilappletrees then  p [[Ты попробовал поставить лестницу к одному из деревьев. Изрубленные ветви с треском обломались и ты полетел вниз... Потирая ушибы и ссадины, ты начал медленно понимать, что насильно мил не будешь... Лучше оставить это и идти дальше...]] end;
 		if z^'topor' and sobralapples then p [[Ты можешь просто пройти. Не надо поступать по-свински. Деревья надо беречь, они дарят тебе воздух. Почему приходится объяснять элементарное?]] end;
 		if z^'topor' and lestnicastand and not sobralapples then p [[До сих пор не можешь определиться, помочь ли деревьям, или изрубить их? Будь последовательнее... Начал одно - так сделай до конца.]] end;
@@ -1147,7 +1164,7 @@ obj {
 	act = function()
 		if cantdothat and onceopened and not izrubilappletrees then p [[Ты не можешь пройти, пока не поможешь деревьям.]] end
 		if cantdothat and not onceopened and not belkaishere then walk 'talkwithtrees2' end 
-		if cantdothat and not onceopened and belkaishere then p[[Ты не можешь пройти, пока не поможешь деревьям. Может, лучше поговорить с белкой?]] end
+		if cantdothat and not onceopened and belkaishere and not izrubilappletrees then p[[Ты не можешь пройти, пока не поможешь деревьям. Может, лучше поговорить с белкой?]] end
 		if propustili and not izrubilappletrees and not cantdothat then walk 'bridge' elseif not propustili and not izrubilappletrees and not cantdothat then walk 'talkwithtrees' end
 		if izrubilappletrees then walk 'bridge' end
 	end;
@@ -1170,7 +1187,7 @@ obj {
 	if izrubilappletrees then p [[Поздно. Не видать теперь тебе яблочек. И чем ты думал?!]] end;
 	if not lestnicastand and not izrubilappletrees then p [[Ты попытался достать до деревьев, но они слишком высокие. Надо придумать способ добраться до ветвей.]] cantdothat = true end;
 	if lestnicastand and not izrubilappletrees then 
-	sobralapples = true cantdothat = false p [[Тебе пришлось хорошенько потрудиться, чтобы достать до каждого яблока. Спустя час все было готово.]] wr = wr+1 end;
+	sobralapples = true cantdothat = false p [[Тебе пришлось хорошенько потрудиться, чтобы достать до каждого яблока. Спустя час все было готово.]] wr = wr+1; test(); end;
 	end;
 }
 
@@ -1245,7 +1262,7 @@ obj {
 	act = function()
 	lestntaken = true;
 	take 'lestninv';
-	p [[Ты схватил лестницу двумя руками. Тяжелая!]]; wr = wr+1;
+	p [[Ты схватил лестницу двумя руками. Тяжелая!]]; wr = wr+1; test();
 	end;
 
 }
