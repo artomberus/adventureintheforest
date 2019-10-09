@@ -2897,6 +2897,10 @@ room {
 	treecounter = treecounter+1;
 	if eveningenabled then evening = evening+1; end;
 	snd.music('mus/InTheField.ogg');
+	snd.play('snd/birds.ogg', 2, 0);
+	end;
+	exit = function()
+	snd.stop(2);
 	end;
 	pic = function()
 	if evening == 0 and not birdontree then return 'gfx/39.png;gfx/daynight2/daynight0.png@0,0' end;
@@ -2967,6 +2971,7 @@ room {
 	obj = {'dub2', 'duplo2', 'tojarptica'};
 	decor = function()
 	p [[Ты видишь {dub2|дуб}. В центре дуба {duplo2|дупло}...]];
+	p [[По всему видно - птицам нравится это дерево... Их заливистое пение можно слушать бесконечно.]];
 	if not seaseen then p [[За старым деревом ты видишь огромное пустое поле, которое простирается до горизонта.]] end;
 	if seaseen then p [[За старым деревом ты видишь огромное пустое поле, за которым - море.]] end;
 	p [[Ты можешь пойти туда.]];

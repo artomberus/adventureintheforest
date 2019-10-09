@@ -42,6 +42,7 @@ trees_sigh.ogg
 trees_sigh_happy.ogg
 whistle.ogg
 flashlight.ogg
+birds.ogg
 
 Они взяты отсюда - https://www.zapsplat.com
 Лицензия - https://www.zapsplat.com/license-type/standard-license/
