@@ -27,6 +27,8 @@ xact.walkout = walkout
 function init ()
 	take 'статус'
 	take 'fonarik'
+	take 'maintain'
+	lifeon 'maintain'
 	end
 
 exit = function()
@@ -34,14 +36,10 @@ exit = function()
 	pleaseeat = false;
 	end;
 
- managesound = function()
+managesound = function()
 	if not clickmute then snd.play('snd/click.wav', 1) end;
 	clickmute = false; 
  end;
-
--- sn = function()
--- snd.play('snd/click.wav', 1);
--- end;
 
 test = function() -- включаю её, когда надо отследить, где добавился опыт
 --	p'+EXP';
@@ -49,11 +47,6 @@ end;
 
  game.afteract = managesound;
  game.afterinv = managesound;
- -- game.afterwalk = managesound;
- -- game.onact = function()
- --	if not clickmute then snd.play('snd/click.wav', 2) end;
- --	clickmute = false; 
- -- end;
  game.oninv = managesound;
  game.onuse = managesound;
  game.onwalk = managesound;
@@ -240,6 +233,8 @@ global { -- Много разных переменных. В основном л
 	askwhere = false; -- можно спрашивать ли про то, где искать перо
 	dalvodu = false; -- особый случай, когда частично помог старику
 	napugal = false; -- напугал ли белку
+	wasinvillage = false; -- был ли в деревне
+	countflush = 0; -- счетчик сброса голода
 }
 
 stat {
@@ -293,6 +288,22 @@ global { -- Сообщения на перекрестке.
 
 function inc(a) return a + 1 end; -- на всякий случай, может пригодятся
 function dec(a) return a - 1 end;
+
+obj {
+	nam = 'maintain'; -- делаем игрока голодным, если долго ходил
+	disp = false;
+	on = false;
+	life = function(s)
+		if player_moved() then
+		s.on = false;
+		countflush = countflush+1;
+		if countflush > 150 then countflush = 0 end;
+--		p 'Ты перешел из локации в локацию.'
+		if wasinvillage and countflush >= 15 then hungry = 0 countflush = 0 end;
+		return
+		end;
+	end;
+}
 
 room { -- Здесь начинается наше путешествие, небольшая предыстория
 	forcedsc = true;
@@ -372,7 +383,7 @@ obj {
 
 	used = function (s, w)
 	if w^'fonarik' then
-	p [[Ты зачем-то посветил на дверь при свете дня, и лишний раз убедился, что без ключа замок не открыть.]] -- sn();
+	p [[Ты зачем-то посветил на дверь при свете дня, и лишний раз убедился, что без ключа замок не открыть.]]
 	return
 	elseif w^'topor' and not openedwithkey then
 	p [[Ты изрубил дверь топором, сделать это было легко. Старые трухлявые доски разлетелись в стороны. Путь открыт. Ну ты и варвар! Сюда же теперь будет попадать дождь, снег...]] evil = evil+1; snd.play('snd/axe.ogg', 1) enable '#door' brokenwithtopor = true wr = wr+1; test(); return
@@ -1294,7 +1305,9 @@ dlg {
 	 bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
 	end;
 	exit = function()
-		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name)
+	clickmute = true;
+	snd.play ('snd/whistle.ogg', 1); 
 	end;
 	phr = { -- Начало фразы
 			{'Я бы и рад, но не могу! Не достаю до ваших ветвей! Подскажите же, что мне делать?', '-- Эм... Хм... Уу... Так! У нас есть подруга, которая может помочь.',
@@ -1316,11 +1329,16 @@ dlg {
 	title = 'Говорящие деревья';
 	enter = function()
 	 bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name) firstintrees = false
-	if not sobralapples then p[[Ты собрался было ступить вперед, как деревья своими ветвями перегородили дорогу. ^-- Куда путь держишь, странник?]] end;
+	if not sobralapples then p[[Ты собрался было ступить вперед, как деревья своими ветвями перегородили дорогу. ^^-- Куда путь держишь, странник?]] end;
 	if sobralapples then p [[Проходи. За то, что ты сделал, мы дарим тебе все свои плоды. Бери столько, сколько сможешь унести. Между прочим, яблочки наши не простые, а с секретом. Но тебе его знать рано ;)]] take 'apples' end;
 	end;
-	exit = function()
+	exit = function(s, t)
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+	clickmute = true;
+	if not soglasen and t^'trees' then snd.play ('snd/trees_sigh.ogg', 1); end;
+	if soglasen and t^'trees' then snd.play ('snd/trees_sigh_happy.ogg', 1) end;
+--	p (here()); 
+--	p (t);
 	end;
         phr = { -- начало фразы
 		{function() if not sobralapples then p [[Пропустите меня, славные сказочные деревья! У меня важная миссия. Я мир спасаю. Да и просто надо выбраться отсюда!]] else p [[{@ walk bridge|Спасибо!}]] end  end ,'-- Извини, но мы не можем тебя пропустить. Хочешь пройти -- помоги нам!',
@@ -2497,6 +2515,7 @@ room {
 	if not have('samobranka') and not alreadytalkedwolfinvillage and not nableguest then walk('talkwithwolfinvillage') end
 	end;
 	enter = function()
+	wasinvillage = true;
 	if nableguest then enable('#enableguest') end
 	snd.music('mus/AMomentsReflection.ogg');
 	if vipusti then zabral = true end; -- плохое, неочевидное решение (но хз)
@@ -3487,6 +3506,12 @@ room {
 	if gullscounter == 4 then seegulls = false else seegulls = true end;
 --	pn ('counter:', string.sub(((gullscounter)),1,4)) -- временная строчка для показа переменной
 --	pn ('check:', string.sub(((gullscheck)),1,4))
+	if seegulls then snd.play('snd/gulls.ogg', 2, 0); end;
+	snd.play('snd/sea_waves.ogg', 3, 0);
+	end;
+	exit = function()
+	snd.stop(2);
+	snd.stop(3);
 	end;
 	pic = function()
 	if evening == 0 and gullscounter == 1 then return 'gfx/38.png;gfx/daynight2/daynight0.png@0,0' end;
