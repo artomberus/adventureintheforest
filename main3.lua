@@ -235,6 +235,7 @@ global { -- Много разных переменных. В основном л
 	napugal = false; -- напугал ли белку
 	wasinvillage = false; -- был ли в деревне
 	countflush = 0; -- счетчик сброса голода
+	eveningenabled = false; -- это для меня, включать и выключать вечер
 }
 
 stat {
@@ -290,7 +291,7 @@ function inc(a) return a + 1 end; -- на всякий случай, может 
 function dec(a) return a - 1 end;
 
 obj {
-	nam = 'maintain'; -- делаем игрока голодным, если долго ходил
+	nam = 'maintain'; -- делаем игрока голодным, если долго ходил, и управление вечером
 	disp = false;
 	on = false;
 	life = function(s)
@@ -298,6 +299,7 @@ obj {
 		s.on = false;
 		countflush = countflush+1;
 		if countflush > 150 then countflush = 0 end;
+--		if mukaest then eveningenabled = true; end; -- проверял, работает ли. теперь по определенному триггеру можно включить вечер
 --		p 'Ты перешел из локации в локацию.'
 		if wasinvillage and countflush >= 15 then hungry = 0 countflush = 0 end;
 		return
@@ -1663,6 +1665,7 @@ room {
 	onenter = function (s, f)
 		if f^'rightroom1' then 
 		p 'Конь: ^ -- Это, кажется, волк! Он раздерет меня на части! За что мне такая судьба... Если мы приблизимся ещё - убежать уже не получится. Прошу тебя. Пожалуйста, вернись!';
+		snd.play('snd/horse.ogg', 2)
 		end
 	end;
 	pic = 'gfx/16_1.png';
@@ -2103,8 +2106,8 @@ room {
 	disp = 'Вид с горы';
 	decor = function()
 	p [[Если идем дальше - назад пути не будет.]];
-	if have('kuvshin') then p [[А ведь надо помочь старику!]] end;
-	if have('kuvshinwithwater') then p [[А ведь надо помочь старику! Ты набрал живой воды...]] end;
+	if have('kuvshin') and not have('one_apple') then p [[А ведь надо помочь старику!]] end;
+	if have('kuvshinwithwater') and not have('one_apple') then p [[А ведь надо помочь старику! Ты набрал живой воды...]] end;
 	end;
 	way = { path{'Назад','starik'}, path {'Дальше','longroad1'} };
 }
@@ -2519,7 +2522,7 @@ room {
 	if nableguest then enable('#enableguest') end
 	snd.music('mus/AMomentsReflection.ogg');
 	if vipusti then zabral = true end; -- плохое, неочевидное решение (но хз)
---	evening = evening+1;
+	if eveningenabled then evening = evening+1; end;
 	end;
 	decor = function()
 	p [[Ты в деревне! Слева ты видишь какое-то сооружение, очень напоминающее домик {totravnik|травника}. Возможно, здесь есть что-то полезное.]];
@@ -2577,8 +2580,75 @@ obj {
 room {
 	nam = 'inkonuh';
 	disp = 'Возле конюха';
+	enter = function()
+	if eveningenabled then evening = evening+1; end;
+	end;
 	pic = function()
-	if not nableguest then return 'gfx/32.png' else return 'gfx/32_2.png' end
+	if evening == 0 and not nableguest then return 'gfx/32.png;gfx/daynight2/daynight0.png@0,0' end;
+	if evening == 1 and not nableguest then return 'gfx/32.png;gfx/daynight2/daynight1.png@0,0' end;
+	if evening == 2 and not nableguest then return 'gfx/32.png;gfx/daynight2/daynight2.png@0,0' end;
+	if evening == 3 and not nableguest then return 'gfx/32.png;gfx/daynight2/daynight3.png@0,0' end;
+	if evening == 4 and not nableguest then return 'gfx/32.png;gfx/daynight2/daynight4.png@0,0' end;
+	if evening == 5 and not nableguest then return 'gfx/32.png;gfx/daynight2/daynight5.png@0,0' end;
+	if evening == 6 and not nableguest then return 'gfx/32.png;gfx/daynight2/daynight6.png@0,0' end;
+	if evening == 7 and not nableguest then return 'gfx/32.png;gfx/daynight2/daynight7.png@0,0' end;
+	if evening == 8 and not nableguest then return 'gfx/32.png;gfx/daynight2/daynight8.png@0,0' end;
+	if evening == 9 and not nableguest then return 'gfx/32.png;gfx/daynight2/daynight9.png@0,0' end;
+	if evening == 10 and not nableguest then return 'gfx/32.png;gfx/daynight2/daynight10.png@0,0' end;
+	if evening == 11 and not nableguest then return 'gfx/32.png;gfx/daynight2/daynight11.png@0,0' end;
+	if evening == 12 and not nableguest then return 'gfx/32.png;gfx/daynight2/daynight12.png@0,0' end;
+	if evening == 13 and not nableguest then return 'gfx/32.png;gfx/daynight2/daynight13.png@0,0' end;
+	if evening == 14 and not nableguest then return 'gfx/32.png;gfx/daynight2/daynight14.png@0,0' end;
+	if evening == 15 and not nableguest then return 'gfx/32.png;gfx/daynight2/daynight15.png@0,0' end;
+	if evening == 16 and not nableguest then return 'gfx/32.png;gfx/daynight2/daynight16.png@0,0' end;
+	if evening == 17 and not nableguest then return 'gfx/32.png;gfx/daynight2/daynight17.png@0,0' end;
+	if evening == 18 and not nableguest then return 'gfx/32.png;gfx/daynight2/daynight18.png@0,0' end;
+	if evening == 19 and not nableguest then return 'gfx/32.png;gfx/daynight2/daynight19.png@0,0' end;
+	if evening == 20 and not nableguest then return 'gfx/32.png;gfx/daynight2/daynight20.png@0,0' end;
+	if evening == 21 and not nableguest then return 'gfx/32.png;gfx/daynight2/daynight21.png@0,0' end;
+	if evening == 22 and not nableguest then return 'gfx/32.png;gfx/daynight2/daynight22.png@0,0' end;
+	if evening == 23 and not nableguest then return 'gfx/32.png;gfx/daynight2/daynight23.png@0,0' end;
+	if evening == 24 and not nableguest then return 'gfx/32.png;gfx/daynight2/daynight24.png@0,0' end;
+	if evening == 25 and not nableguest then return 'gfx/32.png;gfx/daynight2/daynight25.png@0,0' end;
+	if evening == 26 and not nableguest then return 'gfx/32.png;gfx/daynight2/daynight26.png@0,0' end;
+	if evening == 27 and not nableguest then return 'gfx/32.png;gfx/daynight2/daynight27.png@0,0' end;
+	if evening == 28 and not nableguest then return 'gfx/32.png;gfx/daynight2/daynight28.png@0,0' end;
+	if evening == 29 and not nableguest then return 'gfx/32.png;gfx/daynight2/daynight29.png@0,0' end;
+	if evening == 30 and not nableguest then return 'gfx/32.png;gfx/daynight2/daynight30.png@0,0' end;
+	if evening > 30 and not nableguest then return 'gfx/32.png;gfx/daynight2/daynight30.png@0,0' end;
+	if evening == 0 and nableguest then return 'gfx/32_2.png;gfx/daynight2/daynight0.png@0,0' end;
+	if evening == 1 and nableguest then return 'gfx/32_2.png;gfx/daynight2/daynight1.png@0,0' end;
+	if evening == 2 and nableguest then return 'gfx/32_2.png;gfx/daynight2/daynight2.png@0,0' end;
+	if evening == 3 and nableguest then return 'gfx/32_2.png;gfx/daynight2/daynight3.png@0,0' end;
+	if evening == 4 and nableguest then return 'gfx/32_2.png;gfx/daynight2/daynight4.png@0,0' end;
+	if evening == 5 and nableguest then return 'gfx/32_2.png;gfx/daynight2/daynight5.png@0,0' end;
+	if evening == 6 and nableguest then return 'gfx/32_2.png;gfx/daynight2/daynight6.png@0,0' end;
+	if evening == 7 and nableguest then return 'gfx/32_2.png;gfx/daynight2/daynight7.png@0,0' end;
+	if evening == 8 and nableguest then return 'gfx/32_2.png;gfx/daynight2/daynight8.png@0,0' end;
+	if evening == 9 and nableguest then return 'gfx/32_2.png;gfx/daynight2/daynight9.png@0,0' end;
+	if evening == 10 and nableguest then return 'gfx/32_2.png;gfx/daynight2/daynight10.png@0,0' end;
+	if evening == 11 and nableguest then return 'gfx/32_2.png;gfx/daynight2/daynight11.png@0,0' end;
+	if evening == 12 and nableguest then return 'gfx/32_2.png;gfx/daynight2/daynight12.png@0,0' end;
+	if evening == 13 and nableguest then return 'gfx/32_2.png;gfx/daynight2/daynight13.png@0,0' end;
+	if evening == 14 and nableguest then return 'gfx/32_2.png;gfx/daynight2/daynight14.png@0,0' end;
+	if evening == 15 and nableguest then return 'gfx/32_2.png;gfx/daynight2/daynight15.png@0,0' end;
+	if evening == 16 and nableguest then return 'gfx/32_2.png;gfx/daynight2/daynight16.png@0,0' end;
+	if evening == 17 and nableguest then return 'gfx/32_2.png;gfx/daynight2/daynight17.png@0,0' end;
+	if evening == 18 and nableguest then return 'gfx/32_2.png;gfx/daynight2/daynight18.png@0,0' end;
+	if evening == 19 and nableguest then return 'gfx/32_2.png;gfx/daynight2/daynight19.png@0,0' end;
+	if evening == 20 and nableguest then return 'gfx/32_2.png;gfx/daynight2/daynight20.png@0,0' end;
+	if evening == 21 and nableguest then return 'gfx/32_2.png;gfx/daynight2/daynight21.png@0,0' end;
+	if evening == 22 and nableguest then return 'gfx/32_2.png;gfx/daynight2/daynight22.png@0,0' end;
+	if evening == 23 and nableguest then return 'gfx/32_2.png;gfx/daynight2/daynight23.png@0,0' end;
+	if evening == 24 and nableguest then return 'gfx/32_2.png;gfx/daynight2/daynight24.png@0,0' end;
+	if evening == 25 and nableguest then return 'gfx/32_2.png;gfx/daynight2/daynight25.png@0,0' end;
+	if evening == 26 and nableguest then return 'gfx/32_2.png;gfx/daynight2/daynight26.png@0,0' end;
+	if evening == 27 and nableguest then return 'gfx/32_2.png;gfx/daynight2/daynight27.png@0,0' end;
+	if evening == 28 and nableguest then return 'gfx/32_2.png;gfx/daynight2/daynight28.png@0,0' end;
+	if evening == 29 and nableguest then return 'gfx/32_2.png;gfx/daynight2/daynight29.png@0,0' end;
+	if evening == 30 and nableguest then return 'gfx/32_2.png;gfx/daynight2/daynight30.png@0,0' end;
+	if evening > 30 and nableguest then return 'gfx/32_2.png;gfx/daynight2/daynight30.png@0,0' end;
+
 	end;
 	obj = {'talkwithkonuh'};
 	decor = [[Ты видишь {talkwithkonuh|конюха}. ]];
@@ -2596,11 +2666,46 @@ obj {
 	end;
 }
 
+dlgkonuhpic = function()
+	if evening == 0 then return 'gfx/32.png;gfx/daynight2/daynight0.png@0,0' end;
+	if evening == 1 then return 'gfx/32.png;gfx/daynight2/daynight1.png@0,0' end;
+	if evening == 2 then return 'gfx/32.png;gfx/daynight2/daynight2.png@0,0' end;
+	if evening == 3 then return 'gfx/32.png;gfx/daynight2/daynight3.png@0,0' end;
+	if evening == 4 then return 'gfx/32.png;gfx/daynight2/daynight4.png@0,0' end;
+	if evening == 5 then return 'gfx/32.png;gfx/daynight2/daynight5.png@0,0' end;
+	if evening == 6 then return 'gfx/32.png;gfx/daynight2/daynight6.png@0,0' end;
+	if evening == 7 then return 'gfx/32.png;gfx/daynight2/daynight7.png@0,0' end;
+	if evening == 8 then return 'gfx/32.png;gfx/daynight2/daynight8.png@0,0' end;
+	if evening == 9 then return 'gfx/32.png;gfx/daynight2/daynight9.png@0,0' end;
+	if evening == 10 then return 'gfx/32.png;gfx/daynight2/daynight10.png@0,0' end;
+	if evening == 11 then return 'gfx/32.png;gfx/daynight2/daynight11.png@0,0' end;
+	if evening == 12 then return 'gfx/32.png;gfx/daynight2/daynight12.png@0,0' end;
+	if evening == 13 then return 'gfx/32.png;gfx/daynight2/daynight13.png@0,0' end;
+	if evening == 14 then return 'gfx/32.png;gfx/daynight2/daynight14.png@0,0' end;
+	if evening == 15 then return 'gfx/32.png;gfx/daynight2/daynight15.png@0,0' end;
+	if evening == 16 then return 'gfx/32.png;gfx/daynight2/daynight16.png@0,0' end;
+	if evening == 17 then return 'gfx/32.png;gfx/daynight2/daynight17.png@0,0' end;
+	if evening == 18 then return 'gfx/32.png;gfx/daynight2/daynight18.png@0,0' end;
+	if evening == 19 then return 'gfx/32.png;gfx/daynight2/daynight19.png@0,0' end;
+	if evening == 20 then return 'gfx/32.png;gfx/daynight2/daynight20.png@0,0' end;
+	if evening == 21 then return 'gfx/32.png;gfx/daynight2/daynight21.png@0,0' end;
+	if evening == 22 then return 'gfx/32.png;gfx/daynight2/daynight22.png@0,0' end;
+	if evening == 23 then return 'gfx/32.png;gfx/daynight2/daynight23.png@0,0' end;
+	if evening == 24 then return 'gfx/32.png;gfx/daynight2/daynight24.png@0,0' end;
+	if evening == 25 then return 'gfx/32.png;gfx/daynight2/daynight25.png@0,0' end;
+	if evening == 26 then return 'gfx/32.png;gfx/daynight2/daynight26.png@0,0' end;
+	if evening == 27 then return 'gfx/32.png;gfx/daynight2/daynight27.png@0,0' end;
+	if evening == 28 then return 'gfx/32.png;gfx/daynight2/daynight28.png@0,0' end;
+	if evening == 29 then return 'gfx/32.png;gfx/daynight2/daynight29.png@0,0' end;
+	if evening == 30 then return 'gfx/32.png;gfx/daynight2/daynight30.png@0,0' end;
+	if evening > 30 then return 'gfx/32.png;gfx/daynight2/daynight30.png@0,0' end;
+end;
+
 dlg {
 	nam = 'dlgkonuh';
 	disp = 'Разговор с конюхом';
 	noinv = true;
-	pic = 'gfx/32.png';
+	pic = dlgkonuhpic; -- начинаю потихоньку сокращать код. одна функция для обработки всех одинаковых мест
 	enter = function(s)
 	p [[-- Чего тебе?]];
 	bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
@@ -2632,7 +2737,7 @@ dlg {
 	nam = 'dlgkonuhwhenoboroten';
 	disp = 'Разговор с конюхом';
 	noinv = true;
-	pic = 'gfx/32.png';
+	pic = dlgkonuhpic;
 	enter = function(s)
 	p [[-- Приветствую тебя, друг! Ты, наверное, из далеких краёв пришел к нам?]];
 	bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
@@ -2665,7 +2770,7 @@ dlg {
 	nam = 'dlgkonuh2';
 	disp = 'Разговор с конюхом';
 	noinv = true;
-	pic = 'gfx/32.png';
+	pic = dlgkonuhpic;
 	enter = function(s)
 	p [[-- Ух ты! Отдашь ее? Тогда сможешь погостить у меня.]];
 	bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
@@ -2787,7 +2892,7 @@ room {
 	disp = 'Возле столетнего дуба';
 	enter = function()
 	treecounter = treecounter+1;
---	evening = evening+1;
+	if eveningenabled then evening = evening+1; end;
 	snd.music('mus/InTheField.ogg');
 	end;
 	pic = function()
@@ -3499,7 +3604,7 @@ room {
 	nam = 'roomlodka';
 	disp = 'Возле моря';
 	enter = function()
---	evening = evening+1;
+	if eveningenabled then evening = evening+1; end;
 --	if gullscounter >= 4 then gullscounter = 0; end;
 	gullscheck = gullscounter;
 	if gullscheck == gullscounter then gullscounter = rnd(4) end;
