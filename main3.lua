@@ -236,6 +236,8 @@ global { -- Много разных переменных. В основном л
 	wasinvillage = false; -- был ли в деревне
 	countflush = 0; -- счетчик сброса голода
 	eveningenabled = false; -- это для меня, включать и выключать вечер
+	eatenapples = false; -- съел ли яблоки
+	nashel2 = false; -- дупло дерева, особый случай
 }
 
 stat {
@@ -1006,7 +1008,7 @@ dlg {
 	noinv = true;
 	title = 'Белка';
 	enter = function()
-	p 'Что-то знакомое тебе показалось при виде этой белки. Где-то ты ее видел?^ -- О, какие люди! И без фонарика?';
+	p 'Что-то знакомое тебе показалось при виде этой белки. Где-то ты ее видел?^^ -- О, какие люди! И без фонарика?';
 	 bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
 	end;
 	exit = function() 
@@ -1132,7 +1134,7 @@ dlg {
 	noinv = true;
 	title = 'Белка';
 	enter = function()
-	p 'Белка осторожно приблизилась к тебе...^ -- О, какие люди! И без фонарика? Ты знаешь, что нехорошо махать топором перед беззащитной белкой? Вот же ж народ-то пошел, а? Чего тебе?';
+	p 'Белка осторожно приблизилась к тебе...^^ -- О, какие люди! И без фонарика? Ты знаешь, что нехорошо махать топором перед беззащитной белкой? Вот же ж народ-то пошел, а? Чего тебе?';
 	 bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
 	end;
 	exit = function() 
@@ -1462,6 +1464,7 @@ obj {
 			remove(s);
 			remove('apples');
 			take('one_apple');
+			eatenapples = true;
 			if updatescene then walk('longroad6') end; -- это надо для того, чтобы включить переход дальше после того, как съел яблоки
 --			replace ('apples', 'one_apple');
 			end
@@ -2011,7 +2014,7 @@ obj {
 	elseif z^'apples' and dalwater and not firsttalkwithstarik then p [[Спасибо тебе, добрый человек! Взамен я дарю тебе скатерть-самобранку! Пусть она выручает тебя в пути. Только помни - никому не рассказывай о ней! Если проболтаешься - беда будет.]] take ('samobranka') remove('apples') haveskatert = true 
 	elseif z^'apples' and not dalwater and not firsttalkwithstarik then  p [[-- Спасибо тебе, добрый человек! Теперь я молод. Но глаза мои по-прежнему больны... Только живая вода может излечить их и вернуть мне возможность видеть этот мир!]] dalapples = true remove('apples') -- end
 	elseif z^'apples' and firsttalkwithstarik then p [[Ты бы поговорил сначала с человеком...]]
-	elseif z^'kuvshinwithwater' and dalapples then p [[-- Спасибо тебе, добрый человек! Взамен я дарю тебе скатерть-самобранку! Пусть она выручает тебя в пути. Только помни - никому не рассказывай о ней! Если проболтаешься - беда будет.]] take ('samobranka') remove('kuvshinwithwater') haveskatert = true elseif z^'kuvshinwithwater' and not dalapples then p [[Старик умыл глаза водой из кувшина. ^-- Спасибо тебе, добрый человек! Теперь я могу хорошо видеть. Но я ведь по-прежнему стар! Найди молодильные яблоки.]] dalwater = true dalvodu = true remove('kuvshinwithwater') end
+	elseif z^'kuvshinwithwater' and dalapples then p [[-- Спасибо тебе, добрый человек! Взамен я дарю тебе скатерть-самобранку! Пусть она выручает тебя в пути. Только помни - никому не рассказывай о ней! Если проболтаешься - беда будет.]] take ('samobranka') remove('kuvshinwithwater') haveskatert = true elseif z^'kuvshinwithwater' and not dalapples then p [[Старик умыл глаза водой из кувшина. ^^-- Спасибо тебе, добрый человек! Теперь я могу хорошо видеть. Но я ведь по-прежнему стар! Найди молодильные яблоки.]] dalwater = true dalvodu = true remove('kuvshinwithwater') end
 	end;
 };
 
@@ -3035,8 +3038,9 @@ obj {
 	if takkuvshin2 and not kuvshintakedfromstarik  then p [[Дупло старого, могучего дерева. Пустое.]] end;
 	if not takkuvshin2 and not kuvshintakedfromstarik then p [[В дупле ты нашел пустой, но целый кувшин!]] take('kuvshin2') takkuvshin2 = true; end;
 	if kuvshintakedfromstarik and not dalvodu then p [[Увы... На этот раз пусто.]] end;
-	if kuvshintakedfromstarik and dalvodu and not takkuvshin2 then p [[В дупле ты нашел пустой, но целый кувшин!]] take('kuvshin2') takkuvshin2 = true; end;
-	if kuvshintakedfromstarik and dalvodu and takkuvshin2 then p [[Дупло старого, могучего дерева. Пустое.]] end;
+	if kuvshintakedfromstarik and dalvodu and takkuvshin2 and eatenapples and  nashel2 then p [[Дупло старого, могучего дерева. Пустое.3]] end;
+	if kuvshintakedfromstarik and dalvodu and not takkuvshin2 and not nashel2 then p [[В дупле ты нашел пустой, но целый кувшин! 2]] take('kuvshin2') takkuvshin2 = true; nashel2 = true; end;
+--	if kuvshintakedfromstarik and dalvodu and takkuvshin2 and not eatenapples then p [[Дупло старого, могучего дерева. Пустое.2]] end;
 	end;
 }
 
