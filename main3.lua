@@ -444,7 +444,8 @@ obj {  -- Дупло.
 	if w^'key' then
 	p [[Зачем возвращать ключ в дупло?]] return
 	elseif w^'fonarik' then
-	p [[Ты посветил фонариком. Оттуда внезапно выскочила белка и убежала. Ты пожалел, что испугал бедное животное. Но что теперь поделать. В дупле лежал... ключ.]] snd.play('snd/SQ2.ogg', 1)
+	p [[Ты посветил фонариком. Оттуда внезапно выскочила белка и убежала. Ты пожалел, что испугал бедное животное. Но что теперь поделать. В дупле лежал... ключ.]] -- snd.play('snd/SQ2.ogg', 1)
+	snd.play('snd/flashlight.ogg', 1)
 	take('key') touchedkey = true; if not touchedtopor then wr = wr+1; test(); end;
 	remove('fonarik')
 	return
@@ -556,6 +557,7 @@ obj {
 	return
 	end;
    used = function (n, z)
+	if z^'chervi' then p [[Нет смысла надевать червя на крючок, который не на удочке...]] return end;
 	if z^'udochka' then
 	p [[Ты собрал удочку.]]; wr = wr+1; test(); snd.play('snd/leskaiudochka.ogg', 1)
 	take ('udsobr')
@@ -1310,6 +1312,7 @@ dlg {
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name)
 	clickmute = true;
 	snd.play ('snd/whistle.ogg', 1); 
+	snd.play('snd/SQ2.ogg', 2)
 	end;
 	phr = { -- Начало фразы
 			{'Я бы и рад, но не могу! Не достаю до ваших ветвей! Подскажите же, что мне делать?', '-- Эм... Хм... Уу... Так! У нас есть подруга, которая может помочь.',

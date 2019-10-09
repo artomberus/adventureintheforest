@@ -41,6 +41,7 @@ sea_waves.ogg
 trees_sigh.ogg
 trees_sigh_happy.ogg
 whistle.ogg
+flashlight.ogg
 
 Они взяты отсюда - https://www.zapsplat.com
 Лицензия - https://www.zapsplat.com/license-type/standard-license/
