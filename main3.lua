@@ -42,7 +42,7 @@ managesound = function()
  end;
 
 test = function() -- включаю её, когда надо отследить, где добавился опыт
---	p'+EXP';
+	p'+EXP';
 end;
 
  game.afteract = managesound;
@@ -918,6 +918,7 @@ room {
 	enter = function()
 	snd.music 'mus/MiddleEarth.ogg'
 	if have('lestninv') then p [[Ты решил оставить лестницу. Она тяжелая, да и незачем таскать ее с собой.]] remove('lestninv') end
+	if wr == 20 then wr = 19; end; -- опять подгонка прогресса под нужные цифры. ладно уж...
 	end;
 	pic = function(s)
 		if not have 'vorona' and voronaonmost and not voronainriver and not sobralapples then return 'gfx/11voronanamost.png' end;
