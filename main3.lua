@@ -93,7 +93,19 @@ global { -- Вариации "не получится".
 
 global { -- Много разных переменных. В основном логические. На них построена вся игра.
 	wr = 0; -- Переменная, в которой считаем прогресс.
-	max = 20; -- Когда wr достигнет значения max, игрок дойдет до финиша.
+	max = 22; -- Когда wr достигнет значения max, игрок дойдет до развилки
+	choose = 0; -- переменная, которой присвоим значение в зависимости от выбора
+	maxchoose = 3; -- количество инкрементов прогресса в зависимости от выбора
+	rightchoose = 0; -- здесь считаем прогресс правого пути
+--	rightmaxchoose = 1; -- максимум инкрементов для правого пути
+	leftchoose = 0; -- здесь считаем прогресс левого пути
+--	leftmaxchoose = 1; -- максимум инкрементов для левого пути
+	straightchoose = 0; -- здесь считаем прогресс прямого пути
+--	straightmaxchoose = 1; -- максимум инкрементов для прямого пути
+	rightwaychoosen = false;
+	leftwaychoosen = false; -- выбор одного из путей
+	straightwaychoosen = false;
+	afterriver = false; -- прошел ли реку, нужно для прогресса
 	clickmute = false; -- переключатель звука клика
 	stonebreak = false; -- Укатил ли камень.
 	havelopata = false; -- Взял ли лопату.
@@ -240,14 +252,18 @@ global { -- Много разных переменных. В основном л
 	eveningenabled = false; -- это для меня, включать и выключать вечер
 	eatenapples = false; -- съел ли яблоки
 	nashel2 = false; -- дупло дерева, особый случай
+	fixed = false; -- исправил ли прогресс...
 }
 
 stat {
 	nam = 'статус';
 --	pri = -1; -- в инстед версии 3.3.0 и выше эта строчка не требуется. Но в финале её оставлю, для совместимости. Обходит баг с сортировкой предметов в инвентаре.
 	disp = function (s)
+		if rightwaychoosen then choose = rightchoose; end; -- maxchoose = rightmaxchoose; end;
+		if leftwaychoosen then choose = leftchoose; end; -- maxchoose = leftmaxchoose; end;
+		if straightwaychoosen then choose = straightchoose; end; -- maxchoose = straightmaxchoose; end;
 		pn (fmt.c(' '))
-		pn (fmt.c('Прогресс: '), string.sub(((wr/max)*100),1,4), (' %')) -- Считаем и выводим прогресс игры в процентах.
+		pn (fmt.c('Прогресс: '), string.sub((((wr+choose)/(max+maxchoose))*100),1,4), (' %')) -- Считаем и выводим прогресс игры в процентах.
 		pn (fmt.c(' '))
 	end
 };
@@ -891,10 +907,14 @@ dlg {
 room {
 	nam = 'bridge'; -- локация с мостом
 	title = 'Мост';
-	enter = function()
+	enter = function(s, t)
 		snd.music 'mus/MiddleEarth.ogg'
 		if have('lestninv') then p [[Ты решил оставить лестницу. Она тяжелая, да и незачем таскать ее с собой.]] remove('lestninv') end
-		if wr == 20 then wr = 19; end; -- опять подгонка прогресса под нужные цифры. ладно уж...
+		if wr == 20 and not fixed then wr = 19; end; -- опять подгонка прогресса под нужные цифры. ладно уж...
+		end;
+	exit = function()
+		afterriver = true;
+		fixed = true;
 		end;
 	pic = function(s)
 		if not have 'vorona' and voronaonmost and not voronainriver and not sobralapples then return 'gfx/11voronanamost.png' end;
@@ -1293,7 +1313,7 @@ dlg {
 	enter = function()
 		bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name) firstintrees = false
 		if not sobralapples then p[[Ты собрался было ступить вперед, как деревья своими ветвями перегородили дорогу. ^^-- Куда путь держишь, странник?]] end;
-		if sobralapples then p [[Проходи. За то, что ты сделал, мы дарим тебе все свои плоды. Бери столько, сколько сможешь унести. Между прочим, яблочки наши не простые, а с секретом. Но тебе его знать рано ;)]] take 'apples' end;
+		if sobralapples then p [[-- Проходи. За то, что ты сделал, мы дарим тебе все свои плоды. Бери столько, сколько сможешь унести. Между прочим, яблочки наши не простые, а с секретом. Но тебе его знать рано ;)]] take 'apples' end;
 		end;
 	exit = function(s, t)
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
@@ -1490,6 +1510,7 @@ dlg {
 	title = false; 
 	enter = function()
 		talkedwithhorse = true;
+		wr = wr + 1;
 		p [[Конь посмотрел на тебя, и... заговорил:^ -- Вот мы и встретились.]] 
 	 	bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
 		end;
@@ -1514,6 +1535,7 @@ room {
 	pic = 'gfx/13_2.png';
 	enter = function()
 		bg_name = 'gfx/bg_good.png' theme.gfx.bg (bg_name) 
+		if not stoneseen then wr = wr+1; end;
 		stoneseen = true;
 		end;
 	decor = fmt.c('^На древнем камне выбито: ^^ Налево пойдёшь – себя потеряешь, коня спасёшь.^ Направо пойдёшь – коня потеряешь, себя спасёшь.^ Прямо пойдёшь – и себя, и коня потеряешь.');	
@@ -1639,6 +1661,9 @@ room {
 	onenter = function (s, f)
 			if f^'rightroom2' then 
 			p 'Конь: ^ -- Это точно волк! Ну всё, мне конец...';
+			rightwaychoosen = true;
+			rightchoose = rightchoose + 1;
+--			inc(rightchoose);
 			end
 		end;
 	pic = 'gfx/16_2.png';
@@ -1707,6 +1732,7 @@ obj {
 	act = function()
 		p 'Ты спрыгнул с коня. Тот с укором посмотрел тебе вслед. Этот взгляд ты не забудешь никогда...';
 		horseleaved = true;
+		rightchoose = rightchoose + 1;
 		walk 'rightroom6'
 		end
 }
@@ -1754,6 +1780,9 @@ room {
 			snd.play('snd/goodbyehorse.ogg',1);
 			p 'Волк съел коня... Но это был твой выбор. Пора двигаться дальше.';
 			end
+		end;
+	onexit = function()
+		rightchoose = rightchoose + 1;
 		end;
 	pic = 'gfx/16.png';
 	way = { path{'Дальше','kolodets'} };
