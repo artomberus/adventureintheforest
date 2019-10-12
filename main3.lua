@@ -1289,11 +1289,11 @@ dlg {
 		if not izrubilappletrees then p [[-- Ты уже собрал яблоки? Помоги нам!]] end
 	 	bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
 		end;
-	exit = function()
+	exit = function(s, t)
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name)
 		clickmute = true;
-		snd.play ('snd/whistle.ogg', 1); 
-		snd.play('snd/SQ2.ogg', 2)
+		if aftertalkwithtrees and belkaishere then snd.play ('snd/whistle.ogg', 1); end;
+		if aftertalkwithtrees and belkaishere then snd.play('snd/SQ2.ogg', 2) end;
 		end;
 	phr = { -- Начало фразы
 			{'Я бы и рад, но не могу! Не достаю до ваших ветвей! Подскажите же, что мне делать?', '-- Эм... Хм... Уу... Так! У нас есть подруга, которая может помочь.',
@@ -2794,11 +2794,23 @@ room {
 		if vipusti then enable('#enableexit1') disable('#enableattention1') disable('#enableexit2') end;
 		end;
 	pic = function()
-		if not have('pivo') and not have('nopivo') and not nopivoontable and not zabral then return 'gfx/33.png'; end;
-		if have('pivo')  and not have('nopivo') and not nopivoontable and not zabral then return 'gfx/33_1.png'; end;
-		if nopivoontable  and not have('nopivo') and not zabral then return 'gfx/33_2.png'; end;
-		if zabral  and not have('nopivo') then return 'gfx/33.png'; end;
-		if have('nopivo') then return 'gfx/33_1.png'; end;
+--		if not have('pivo') and not have('nopivo') and not nopivoontable and not zabral then return 'gfx/33.png'; end;
+--		if have('pivo') and not have('nopivo') and not nopivoontable and not zabral then return 'gfx/33_1.png'; end;
+--		if nopivoontable and not have('nopivo') and not zabral then return 'gfx/33_2.png'; end;
+--		if zabral  and not have('nopivo') then return 'gfx/33.png'; end;
+--		if have('nopivo') then return 'gfx/33_1.png'; end;
+
+		if not eveningenabled and not have('pivo') and not have('nopivo') and not nopivoontable and not zabral then return 'gfx/33.png'; end;
+		if not eveningenabled and have('pivo')  and not have('nopivo') and not nopivoontable and not zabral then return 'gfx/33_1.png'; end;
+		if not eveningenabled and nopivoontable  and not have('nopivo') and not zabral then return 'gfx/33_2.png'; end;
+		if not eveningenabled and zabral and not have('nopivo') then return 'gfx/33.png'; end;
+		if not eveningenabled and have('nopivo') then return 'gfx/33_1.png'; end;
+		if eveningenabled and not have('pivo') and not have('nopivo') and not nopivoontable and not zabral then return 'gfx/33.png;gfx/daynight2/daynight_evening.png@0,0'; end;
+		if eveningenabled and have('pivo')  and not have('nopivo') and not nopivoontable and not zabral then return 'gfx/33_1.png;gfx/daynight2/daynight_evening.png@0,0'; end;
+		if eveningenabled and nopivoontable  and not have('nopivo') and not zabral then return 'gfx/33_2.png;gfx/daynight2/daynight_evening.png@0,0'; end;
+		if eveningenabled and zabral and not have('nopivo') then return 'gfx/33.png;gfx/daynight2/daynight_evening.png@0,0'; end;
+		if eveningenabled and have('nopivo') then return 'gfx/33_1.png;gfx/daynight2/daynight_evening.png@0,0'; end;
+		
 		end;
 	obj = {'tobarmen', 'tositdown', 'tokartina'};
 	decor = function()
@@ -3365,9 +3377,17 @@ room {
 room {
 	nam = 'travnik';
 	disp = 'У травника';
+--	pic = function()
+--		if havetaburet then return 'gfx/37_1.png' else return 'gfx/37.png' end;
+--		end;
 	pic = function()
-		if havetaburet then return 'gfx/37_1.png' else return 'gfx/37.png' end;
-		end;
+	if eveningenabled and havetaburet and not (evening > 5) then return 'gfx/37_1.png' end;
+	if eveningenabled and not havetaburet and not (evening > 5) then return 'gfx/37.png' end;
+	if eveningenabled and havetaburet and (evening > 5) then return 'gfx/37_1.png;gfx/daynight2/daynight_evening.png@0,0' end;
+	if eveningenabled and not havetaburet and (evening > 5) then return 'gfx/37.png;gfx/daynight2/daynight_evening.png@0,0' end;
+	if not eveningenabled and havetaburet then return 'gfx/37_1.png' end;
+	if not eveningenabled and not havetaburet then return 'gfx/37.png' end;
+	end;
 	enter = function()
 		snd.music('mus/DarkRedWine.ogg');
 		if not havetaburet then enable('#enableexit') disable('#enableattention') end;
@@ -3448,7 +3468,10 @@ obj {
 room {
 	nam = 'intravnik';
 	disp = 'Возле травника';
-	pic = 'gfx/37_2.png';
+--	pic = 'gfx/37_2.png';
+	pic = function()
+	if eveningenabled and (evening > 5) then return 'gfx/37_2.png;gfx/daynight2/daynight_evening.png@0,0' else return 'gfx/37_2.png' end;
+	end;
 	way = { path{'Отойти от травника', 'travnik'} };
 
 }
@@ -3456,7 +3479,10 @@ room {
 room {
 	nam = 'melnica';
 	disp = 'Внутри мельницы';
-	pic = 'gfx/41.png';
+--	pic = 'gfx/41.png';
+	pic = function()
+	if eveningenabled and (evening > 5) then return 'gfx/41.png;gfx/daynight2/daynight_evening.png@0,0' else return 'gfx/41.png' end;
+	end;
 	enter = function()
 		snd.music('mus/Rhastafarian.ogg');
 		end;
@@ -3481,7 +3507,10 @@ obj {
 room {
 	nam = 'inmelnic';
 	disp = 'Возле мельника';
-	pic = 'gfx/41_2.png';
+--	pic = 'gfx/41_2.png';
+	pic = function()
+	if eveningenabled and (evening > 5) then return 'gfx/41_2.png;gfx/daynight2/daynight_evening.png@0,0' else return 'gfx/41_2.png' end;
+	end;
 	decor = function()
 		p [[Мельник напоминает тебе то ли представителя неформальной субкультуры в годах, то ли твоего преподавателя из универа... Странный и эксцентричный тип, похоже. Но всё же он может быть полезен. {talkwithmelnic|Поговорить} с ним?]];
 		end;
@@ -3758,7 +3787,18 @@ room {
 		snd.music('mus/TheGreatUnknown.ogg');
 		end;
 	pic = function()
-		if zanaveskaopen then return 'gfx/40_2.png' else return 'gfx/40.png' end
+--		if zanaveskaopen and not (evening > 30) then return 'gfx/40_2.png' end;
+--		if zanaveskaopen and evening > 30 and oboroten then return 'gfx/40_3.png' end;
+--		if zanaveskaopen and evening > 30 and not oboroten then return 'gfx/40_2.png' end;
+--		if not zanaveskaopen then return 'gfx/40.png' end;
+		if not eveningenabled and zanaveskaopen and not (evening > 30) then return 'gfx/40_2.png' end;
+		if not eveningenabled and zanaveskaopen and evening > 30 and oboroten then return 'gfx/40_3.png' end;
+		if not eveningenabled and zanaveskaopen and evening > 30 and not oboroten then return 'gfx/40_2.png' end;
+		if not eveningenabled and not zanaveskaopen then return 'gfx/40.png' end;
+		if eveningenabled and zanaveskaopen and not (evening > 30) then return 'gfx/40_2.png;gfx/daynight2/daynight_evening.png@0,0' end;
+		if eveningenabled and zanaveskaopen and evening > 30 and oboroten then return 'gfx/40_3.png;gfx/daynight2/daynight_evening.png@0,0' end;
+		if eveningenabled and zanaveskaopen and evening > 30 and not oboroten then return 'gfx/40_2.png;gfx/daynight2/daynight_evening.png@0,0' end;
+		if eveningenabled and not zanaveskaopen then return 'gfx/40.png;gfx/daynight2/daynight_evening.png@0,0' end;
 		end;
 	obj = {'podvinut'};
 	decor = function()
