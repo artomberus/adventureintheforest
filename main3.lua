@@ -3,7 +3,9 @@
 --
 -- Исходный код игры (включая изображения) распространяется на условиях лицензии MIT. Полный текст лицензии см. в файле LICENCE.txt, который находится в каталоге с игрой. Звуки, музыка - распространяются под своими лицензиями, см. snd/source.txt и mus/Copyright.txt
 --
--- $Name: Лесное приключение $
+-- $Name(ru): Лесное приключение $
+-- $Name(en): Adventure in the forest $
+-- $Name(uk): Лісова подорож $
 -- $Version: 0.01$
 -- $Author: Дмитрий Петрук$
 -- $Info: Ники в сети - Amberit(92), Artorius, Artomberus \n Код игры - под MIT  \n Музыка: Jason Shaw, лицензия CC BY 3.0 \n Звуки - см. каталог игры $
@@ -16,6 +18,7 @@ require "keys"
 require "dbg"
 require "sprite"
 require "snapshots"
+loadmod "decor"
 game.act = 'Не работает.';
 game.use = function ()
 	return p(phrases[rnd(#phrases)]);
@@ -29,7 +32,13 @@ function init ()
 	take 'fonarik'
 	take 'maintain'
 	lifeon 'maintain'
+	createbutton();
 	end
+
+function game:ondecor()
+	clickmute = true;
+	walkin('control_room');
+	end;
 
 exit = function()
 	pleasedrink = false;
@@ -37,7 +46,7 @@ exit = function()
 	end;
 
 managesound = function()
-	if not clickmute then snd.play('snd/click.wav', 1) end;
+	if not clickmute and not weareincontrol then snd.play('snd/click.wav', 1) end;
 	clickmute = false; 
  	end;
 
@@ -105,6 +114,10 @@ global { -- Много разных переменных. В основном л
 	rightwaychoosen = false;
 	leftwaychoosen = false; -- выбор одного из путей
 	straightwaychoosen = false;
+	ru = true; -- маркеры языка...
+	en = false;
+	ua = false;
+	weareincontrol = false; -- находимся ли мы в контрольной панели
 	afterriver = false; -- прошел ли реку, нужно для прогресса
 	clickmute = false; -- переключатель звука клика
 	stonebreak = false; -- Укатил ли камень.
@@ -263,7 +276,9 @@ stat {
 		if leftwaychoosen then choose = leftchoose; end; -- maxchoose = leftmaxchoose; end;
 		if straightwaychoosen then choose = straightchoose; end; -- maxchoose = straightmaxchoose; end;
 		pn (fmt.c(' '))
-		pn (fmt.c('Прогресс: '), string.sub((((wr+choose)/(max+maxchoose))*100),1,4), (' %')) -- Считаем и выводим прогресс игры в процентах.
+		if ru then pn (fmt.c('Прогресс: '), string.sub((((wr+choose)/(max+maxchoose))*100),1,4), (' %')) end;
+		if en then pn (fmt.c('Progress: '), string.sub((((wr+choose)/(max+maxchoose))*100),1,4), (' %')) end;
+		if ua then pn (fmt.c('Прогрес: '), string.sub((((wr+choose)/(max+maxchoose))*100),1,4), (' %')) end; -- Считаем и выводим прогресс игры в процентах.
 		pn (fmt.c(' '))
 	end
 };
@@ -330,13 +345,19 @@ room { -- Здесь начинается наше путешествие, не�
 	forcedsc = true;
 	nam = 'main';
 	noinv = true;
-	title = 'Вступление';
+	title = function()
+ 		if ru then return 'Вступление'; end;
+		if en then return 'Intro'; end;
+		if ua then return 'Вступ'; end;
+		end;
 	pic = 'gfx/0.png';
 	enter = function()
 		snd.music 'mus/Beginning.ogg' bg_name = 'gfx/bg_good.png' theme.gfx.bg (bg_name) 
+		deletebutton();
 		end;
 	exit = function()
 		instead.fading = true; 
+		createbutton();
 		end;
 	dsc = [[ Ты уснул, как обычно, к полуночи. Сон был беспокойный, грезились инопланетяне, склонившиеся над головой, но как только просыпался в ужасе - видел всё ту же привычную комнату. Успокоившись, что мир за время твоего сна никуда не делся, ты снова засыпал. Так несколько раз... Но в конце-концов - страхи имеют свойство материализоваться. Уже сквозь сон ты услышал, что воздух стал чище, холоднее. Что-то не так. Ты резко открыл глаза...  
 {@ walk start|Дальше}]];
@@ -344,14 +365,21 @@ room { -- Здесь начинается наше путешествие, не�
 
 room { 
 	nam = "start";
-	title = 'Развилка';
+	title = function()
+ 		if ru then return 'Развилка'; end;
+		if en then return 'Crossroads'; end;
+		if ua then return 'Перехрестя'; end;
+		end;
 	pic = 'gfx/1.png';
 	enter = function()
 		snd.music 'mus/Atlantis.ogg' if firststart then snd.play('snd/breath.ogg', 1) end   bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
 		end;
 	dsc = function (i)
 		if firststart then
-			p [[А комнаты-то нет!!!]] firststart = false otherstarts = true
+			if ru then p [[А комнаты-то нет!!!]] end
+			if en then p [[But there is no any room!!!!]] end
+			if ua then p [[А кімнати-то немає!!!]] end
+			firststart = false otherstarts = true
 			return
 			end
 		if otherstarts then
@@ -360,9 +388,56 @@ room {
 			end
 
 		end;
-	decor = "Ты в лесу! Деревья закрывают все пути отступления, есть лишь расхоженная тропа, на которой ты стоишь. Ты можешь пойти налево, направо, а можешь пойти прямо - в центре развилки растет огромный {dub|дуб}. Еще можно развернуться и пойти назад. ";	
+	decor = function()
+		if ru then return "Ты в лесу! Деревья закрывают все пути отступления, есть лишь расхоженная тропа, на которой ты стоишь. Ты можешь пойти налево, направо, а можешь пойти прямо - в центре развилки растет огромный {dub|дуб}. Еще можно развернуться и пойти назад. "; end;	
+		if en then return "You are in the forest! Trees block all escape routes, there is only a well-groomed path on which you stand. You can go left, right, or you can go straight ahead - a huge {dub|oak} grows in the center of the crossway. You can still turn around and go back. "; end;	
+		if ua then return "Ти в лісі! Дерева закривають всі шляхи до відступу, є лише росходжена стежка, на якій ти знаходишся. Ти можеш піти наліво, направо, а можеш пійти прямо - в центрі перехрестя росте величезний {dub|дуб}. Ще можна розвернутися й піти назад. "; end;	
+		end;
 	obj = {'dub'};
-	way = {path {'Налево', after = 'К хижине', 'leftway'}, path {'Прямо', after = 'К дубу', 'centerway'}, path {'Направо', after = 'К озеру', 'rightway'}, path {'Назад', after = 'К обрыву', 'back'} };
+	way = {path {function()
+			if ru then return 'Налево' end
+			if en then return 'Left' end
+			if ua then return 'Наліво' end
+			 	end,
+			after = function()
+			if ru then return 'К хижине' end
+			if en then return 'To house' end
+			if ua then return 'До хатини' end
+				end,
+			'leftway'},
+		 path {function()
+			if ru then return 'Прямо' end
+			if en then return 'Straight' end
+			if ua then return 'Прямо' end
+				end,
+			after = function()
+			if ru then return 'К дубу' end
+			if en then return 'To oak' end
+			if ua then return 'До дуба' end
+				end,
+			'centerway'},
+		 path {function()
+			if ru then return 'Направо' end
+			if en then return 'Right' end
+			if ua then return 'Направо' end
+				end,
+			after = function()
+			if ru then return 'К озеру' end
+			if en then return 'To lake' end
+			if ua then return 'До озера' end
+				end,
+			'rightway'},
+		 path {function()
+			if ru then return 'Назад' end
+			if en then return 'Back' end
+			if ua then return 'Назад' end
+				end,
+			after = function()
+			if ru then return 'К обрыву' end
+			if en then return 'To fall' end
+			if ua then return 'До пропасті' end
+				end,
+			'back'} };
 }
 room {
 	nam = 'leftway';	
@@ -511,9 +586,11 @@ room {
 	noinv = true;
 	enter = function(s)
 		bg_name = 'gfx/bg_death.png' theme.gfx.bg (bg_name) fallen = true;
+		deletebutton();
 		end;
 	exit = function()
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+		createbutton();
 		end;
 	title ='Всё...';
 	pic = 'gfx/44.png';
@@ -532,10 +609,23 @@ obj {
 
 obj {
 	nam = 'fonarik';
-	disp = fmt.img('gfx/inv/fonarik.png')..'Фонарик';
+	disp = function()
+	if ru then return fmt.img('gfx/inv/fonarik.png')..'Фонарик'; end;
+	if en then return fmt.img('gfx/inv/fonarik.png')..'Flashlight'; end;
+	if ua then return fmt.img('gfx/inv/fonarik.png')..'Ліхтарик'; end;
+		end;
 	inv = function()
 		clickmute = true;
-		if isusercozel then p 'Ты попробовал взять фонарик в зубы, но это не очень хорошо получилось) Увы и ах.' waycounter = waycounter+1 snd.play('snd/sheep.ogg', 1) else p 'Привычка держать в кармане маленький китайский динамо-фонарь на этот раз оказалась очень даже кстати.' end
+			if isusercozel then 
+				if ru then return p'Ты попробовал взять фонарик в зубы, но это не очень хорошо получилось) Увы и ах.' end;
+				if en then return p'You tried to take a flashlight in your teeth, but it didn’t work out very well) Alas.' end;
+				if ua then return p'Ти спробував взяти ліхтарик в зуби, але це не дуже добре вийшло) На жаль.' end;
+		 waycounter = waycounter+1 snd.play('snd/sheep.ogg', 1)
+		else
+			if ru then return p 'Привычка держать в кармане маленький китайский динамо-фонарь на этот раз оказалась очень даже кстати.' end;
+			if en then return p 'The habit of holding a small Chinese dynamo flashlight in my pocket this time turned out to be very helpful.' end;
+			if ua then return p 'Звичка тримати в кишені маленький китайський динамо-ліхтар на цей раз виявилася дуже навіть до речі.' end;
+			end
 		end;
 }
 obj {
@@ -867,12 +957,14 @@ dlg {
 	title = false; 
 	pic = 'gfx/7.png';
 	enter = function()
+		deletebutton();
 		p [[Ты в третий раз закинул удочку. Волны озера разошлись в стороны, пропуская рыбу, которую ты так бесцеремонно вытащил на берег. Только когда она попала тебе в руки, ты понял, что рыбка-то не обычная, а золотая! И говорящая! Ты аккуратно снял крюк... ^ -- Кто же так с рыбками-то обращается? - золотая рыбка нервно и обижено смотрела на тебя своими мудрыми глазами, из-за ран, которые ты ей нанес. -- Так-так, так. И где же твой невод?]] snd.music 'mus/TheAngelsWeep.ogg' bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name) 
 		end;
 	exit = function()
 		snd.music 'mus/Atlantis.ogg' bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
 		clickmute = true;
 		snd.play('snd/awaterplouffff.ogg');
+		createbutton();
 		end;
 	phr = { -- открыл диалог
 		{'Невод? Какой невод?', '-- Ты сказки в детстве читал? Старик был один, добрый, но старуху слушался... Пошел он однажды в море, закинул невод... один раз закинул, второй... А на третий словил меня. А я чудеса творить умею. Силы морские, да и всей Земли, подвластны мне. Не потому, что я царица морская, а потому, что у природы всё едино... Та история закончилась не очень хорошо. Хотя старик и не виноват ни в чем. Но вот сейчас я снова на берегу -- поэтому и спрашиваю -- где твой невод? Что за варварские методы нынче пошли? Рыба тоже чело... рыба. Рыба тоже живое существо.',
@@ -1008,9 +1100,11 @@ dlg {
 	enter = function()
 		p 'Что-то знакомое тебе показалось при виде этой белки. Где-то ты ее видел?^^ -- О, какие люди! И без фонарика?';
 	 	bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
+		deletebutton();
 		end;
 	exit = function() 
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+		createbutton();
 		end;
 	phr = { -- Начало фразы
 			{'Т..ты? Это была ты?','-- А кто же еще? Я как раз дремала себе тихо, а тут в глаза луч! Я уж думала, всё, не жить мне больше, и не видеть белый свет.',
@@ -1019,7 +1113,7 @@ dlg {
 					{'Слушай, помоги, а? Мне надо продолжать путь, но деревья отказываются пропускать, если не соберу их яблоки. Другого прохода нет, а яблоки я не достаю... Мне нужно на что-то стать, чтобы подняться повыше. Но что я могу найти здесь, в лесу...','-- Ой. Так уж и быть, помогу тебе. Тем более, все наслышаны о миссии. Спасти человечество! Это не мелочь какая-нибудь...',
 						{'Почему все знают больше, чем я?','-- А как ты хотел? Только трудный путь покажет, на что ты способен. А ведь на тебя смотрит весь мир природы!',
 							{'Ладно, не нагнетай! Сам боюсь. Итак, что ты говорила о помощи?','-- Посмотри за хижиной. Там есть то, что ты ищешь.',
-								{'Спасибо, но...', function()p 'Белка убежала, словно ее никогда и не было.' waytohouseback = true belkaishere = false onceopened = true belkaseen = true wr = wr+1; test(); walk 'trees' end }
+								{'Спасибо, но...', function()p 'Белка убежала, словно её никогда и не было.' waytohouseback = true belkaishere = false onceopened = true belkaseen = true wr = wr+1; test(); walk 'trees' end }
 							},
 						},
 					},
@@ -1045,9 +1139,11 @@ dlg {
 	enter = function()
 		p 'Ты подумал, что вот, теперь и к тебе пришла белочка...^ -- Ну привет, привет. Отважный герой идет спасать мир. Старая история. Только на этот раз все взаправду.';
 	 	bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
+		deletebutton();
 		end;
 	exit = function() 
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+		createbutton();
 		end;
 	phr = { -- Начало фразы
 			{'Ты - говорящая белка?','-- Вот почему это тебя так удивляет? Можно подумать, вы, люди, между собой не общаетесь... Этот лес - волшебный. Здесь работают совсем иные законы. Скоро ты начнешь это понимать. Как и свою миссию. Смотри, чтобы не было поздно!',
@@ -1082,9 +1178,11 @@ dlg {
 	enter = function()
 		p 'Белка осторожно приблизилась к тебе...^ -- Ты знаешь, что нехорошо махать топором перед беззащитной белкой? Вот же ж народ-то пошел, а? Чего тебе?';
 	 	bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
+		deletebutton();
 		end;
 	exit = function() 
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+		createbutton();
 		end;
 	phr = { -- Начало фразы
 			{'Ты - говорящая белка?','-- Вот почему это тебя так удивляет? Можно подумать, вы, люди, между собой не общаетесь... Этот лес - волшебный. Здесь работают совсем иные законы. Скоро ты начнешь это понимать. Как и свою миссию. Смотри, чтобы не было поздно!',
@@ -1119,9 +1217,11 @@ dlg {
 	enter = function()
 		p 'Белка осторожно приблизилась к тебе...^^ -- О, какие люди! И без фонарика? Ты знаешь, что нехорошо махать топором перед беззащитной белкой? Вот же ж народ-то пошел, а? Чего тебе?';
 	 	bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
+		deletebutton();
 		end;
 	exit = function() 
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+		createbutton();
 		end;
 	phr = { -- Начало фразы
 			{'Т..ты? Это была ты?','-- А кто же еще? Я как раз дремала себе тихо, а тут в глаза луч! Я уж думала, всё, не жить мне больше, и не видеть белый свет.',
@@ -1153,27 +1253,41 @@ obj {
 	seen = false;
 	dsc = function(s)
 		if not s.seen then
-		p 'В траве {что-то} лежит.';
+			if ru then return p'В траве {что-то} лежит.'; end;
+			if en then return p'There is {something} in the grass.' end;
+			if ua then return p'У траві {щось} лежить.'; end;
 		else
-		p 'В траве ты увидел {топор}!'; uvideltopor = true;
+			if ru then return p 'В траве ты увидел {топор|топор}!'; end;
+			if en then return p 'You saw an {топор|axe} in the grass!' end;
+			if ua then return p 'У траві ти помітив {топор|сокиру}!' end;
+			uvideltopor = true;
 		end
 		end;
 	act = function(s)
 		if s.seen then
-			p 'Ты взял топор.';
 			remove ('топор');
 			touchedtopor = true;
-			take 'topor'; if not touchedkey then wr = wr+1; test(); end;
+			take 'topor'; if not touchedkey then wr = wr+1; test();
+				if ru then return p'Ты взял топор.'; end;
+				if en then return p'You took an axe.'; end;
+				if ua then return p'Ты взяв сокиру.'; end;
+			  end;
 			else
 			s.seen = true;
-			p 'Гм... Это же топор!';
+			if ru then return p'Гм... Это же топор!'; end;
+			if en then return p'Um. This is an axe!'; end;
+			if ua then return p'Ой, так це ж сокира!'; end;
 			end
 		end;
 };
 
 obj {
 	nam = 'topor'; -- топор в инвентаре
-	disp = fmt.img('gfx/inv/topor.png')..'Топор';
+	disp = function()
+	if ru then return fmt.img('gfx/inv/topor.png')..'Топор'; end;
+	if en then return fmt.img('gfx/inv/topor.png')..'Axe'; end;
+	if ua then return fmt.img('gfx/inv/topor.png')..'Сокира'; end;
+		end;
 	inv = function()
 		clickmute = true;
 		if isusercozel and not removetopor then p 'Орудие казни... Гены предыдущих поколений козликов отозвались в тебе глубинным, животным ужасом, при виде этого предмета.' waycounter = waycounter+1 snd.play('snd/sheep.ogg', 1) elseif not removetopor then p 'Неплохой топор, старинного образца. Откуда он здесь?' end
@@ -1230,9 +1344,11 @@ room {
 	pic = 'gfx/42.png';
 	enter = function(s)
 		bg_name = 'gfx/bg_death.png' theme.gfx.bg (bg_name)
+		deletebutton();
 		end;
 	exit = function()
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+		createbutton();
 		end;
 	decor = [[Ты умер!]];
 }: with {
@@ -1288,8 +1404,10 @@ dlg {
 	enter = function()
 		if not izrubilappletrees then p [[-- Ты уже собрал яблоки? Помоги нам!]] end
 	 	bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
+		deletebutton();
 		end;
 	exit = function(s, t)
+		createbutton();
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name)
 		clickmute = true;
 		if aftertalkwithtrees and belkaishere then snd.play ('snd/whistle.ogg', 1); end;
@@ -1311,11 +1429,13 @@ dlg {
 	noinv = true;
 	title = 'Говорящие деревья';
 	enter = function()
+		deletebutton();
 		bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name) firstintrees = false
 		if not sobralapples then p[[Ты собрался было ступить вперед, как деревья своими ветвями перегородили дорогу. ^^-- Куда путь держишь, странник?]] end;
 		if sobralapples then p [[-- Проходи. За то, что ты сделал, мы дарим тебе все свои плоды. Бери столько, сколько сможешь унести. Между прочим, яблочки наши не простые, а с секретом. Но тебе его знать рано ;)]] take 'apples' end;
 		end;
 	exit = function(s, t)
+		createbutton();
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
 		clickmute = true;
 		if not soglasen and t^'trees' then snd.play ('snd/trees_sigh.ogg', 1); end;
@@ -1383,7 +1503,7 @@ obj {
 	act = [[Обычная река. Но тебя она наталкивает на философские мысли о бренности бытия и быстротечности времени.]];
 	used = function (n, z)
 		if z^'vorona' then
-		p [[Ты выбросил мертвую ворону в реку.]] remove ('vorona') voronainriver = true  snd.play('snd/awaterplouffff.ogg', 1) return end
+		p [[Ты выбросил мёртвую ворону в реку.]] remove ('vorona') voronainriver = true  snd.play('snd/awaterplouffff.ogg', 1) return end
 		return false;
 		end;
 }
@@ -1513,9 +1633,11 @@ dlg {
 		wr = wr + 1;
 		p [[Конь посмотрел на тебя, и... заговорил:^ -- Вот мы и встретились.]] 
 	 	bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
+		deletebutton();
 		end;
 	exit = function()
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+		createbutton();
 		end;
 	phr = { -- начало фразы
 			{'Ты умеешь говорить?', '-- Да, как и все сказочные животные.',
@@ -1756,9 +1878,11 @@ dlg {
 	enter = function()
 		p [[Волк посмотрел на тебя сочувственно, и... заговорил:^ -- Ну что, путник. Слезай с коня.]] 
 		bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
+		deletebutton();
 		end;
 	exit = function()
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+		createbutton();
 		end;
 	phr = { -- начало фразы
 			{'Почему это?', '-- Ты надпись на камне читал? Читал. Какие могут быть еще вопросы? Конь - мой. А ты ступай себе с миром.',
@@ -1901,11 +2025,13 @@ dlg {
 	noinv = true;
 	pic = 'gfx/26.png';
 	enter = function(s)
+		deletebutton();
 		bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
 		p (fmt.c ('-- Я Колобок, Колобок, я по коробу скребён, ^По сусеку метён, на сметане мешон ^Да в масле пряжон, на окошке стужон. ^Я от дедушки ушёл, я от бабушки ушёл, ^Я от зайца ушёл, я от волка ушёл, ^От медведя ушёл, от тебя, лисы, ^нехитро уйти!') )
 		end;
 	exit = function()
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+		createbutton();
 		end;
 	phr = { -- Начало фразы
 			{'Колобок?', '-- Лиса?',
@@ -2007,9 +2133,11 @@ dlg {
 		p [[Приветствую тебя, странник!]];
 		firsttalkwithstarik = false;
 		bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
+		deletebutton();
 		end;
 	exit = function()
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+		createbutton();
 		end;
 	phr = { -- Начало фразы 
 				only = true;
@@ -2048,9 +2176,11 @@ dlg {
 	enter = function(s)
 		p [[Приветствую тебя, странник!]];
 		bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
+		deletebutton();
 		end;
 	exit = function()
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+		createbutton();
 		end;
 	phr = { -- начало фразы
 		{'Привет!', function() if not dalwater then p'Набрал ли ты живой воды в кувшин, что я дал тебе?' end if not dalapples then p'Нашел ли ты молодильные яблоки?' end end ,
@@ -2069,9 +2199,11 @@ dlg {
 	enter = function(s)
 		p [[Приветствую тебя, странник!]];
 		bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
+		deletebutton();
 		end;
 	exit = function()
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+		createbutton();
 		end;
 	phr = { -- начало фразы
 		{'Привет!', 'Помоги мне, добрый человек. Злая колдунья отняла у меня годы жизни... Я стар. И почти слеп. И иду в далекую землю, где, говорят, есть такая вода, которой если умоешься - вмиг прозреешь. И есть такие яблоки, которые растут на особенных деревьях - когда их съешь - враз молодым становишься. Дивно ли, чудно ли, но я ищу все это. Не для себя. Не только. Для старухи моей. Она побивается от горя, места себе не находит... Помоги мне - а я помогу тебе. Вижу, что голоден ты...',
@@ -2202,6 +2334,7 @@ room {
 		if hungry == 5 then bg_name = 'gfx/bg_eat100.png' end;
 		if hungry > 5 then bg_name = 'gfx/bg_eat120.png' end;
 		theme.gfx.bg (bg_name)
+		deletebutton();
 		end;
 	pic = function()
 		if not bread1 then pr 'gfx/inskatert/15.png;gfx/inskatert/1bread.png@120,95' end
@@ -2253,6 +2386,7 @@ room {
 		if hungry >= hungrymax then prival1enabled = true prival2enabled = true prival3enabled = true prival4enabled = true prival5enabled = true prival6enabled = true end;
 		if youeatenfish and youeatenmilk then p [[Сочетать рыбу с молоком? А ты бесстрашный...]] end;
 		youeatenfish = false; youeatenmilk = false;
+		createbutton();
 		end;
 }
 
@@ -2698,9 +2832,11 @@ dlg {
 	enter = function(s)
 		p [[-- Чего тебе?]];
 		bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
+		deletebutton();
 		end;
 	exit = function()
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+		createbutton();
 		end;
 	phr = { -- начало фразы
 		only = true;
@@ -2729,9 +2865,11 @@ dlg {
 	enter = function(s)
 		p [[-- Приветствую тебя, друг! Ты, наверное, из далеких краёв пришел к нам?]];
 		bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
+		deletebutton();
 		end;
 	exit = function()
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+		createbutton();
 		end;
 	phr = { -- начало фразы
 		only = true;
@@ -2758,9 +2896,11 @@ dlg {
 	enter = function(s)
 		p [[-- Ух ты! Отдашь ее? Тогда сможешь погостить у меня.]];
 		bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
+		deletebutton();
 		end;
 	exit = function()
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+		createbutton();
 		end;
 	phr = { -- начало фразы
 		only = true;
@@ -2842,9 +2982,11 @@ dlg {
 		tyvor = true;
 		p [[-- Далеко собрался? Кружку отдай!]];
 		bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
+		deletebutton();
 		end;
 	exit = function()
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+		createbutton();
 		end;
 	phr = { -- начало фразы
 		{'Ээ... Я... Это...','-- Вор ты, вот ты кто! ',
@@ -2869,9 +3011,11 @@ dlg {
 		wasintalkaboutkruzhka2 = true;
 		p [[-- А отдать кружку?]];
 		bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
+		deletebutton();
 		end;
 	exit = function()
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+		createbutton();
 		end;
 	phr = { -- начало фразы
 		{'Я оставил её на столике.','-- А, хорошо, я потом заберу.',
@@ -3129,9 +3273,11 @@ dlg {
 	enter = function(s)
 		p [[-- Я видела, как ты крадешься! Чего тебе?]];
 		bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
+		deletebutton();
 		end;
 	exit = function()
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+		createbutton();
 		end;
 	phr = { -- начало фразы
 		only = true;
@@ -3154,9 +3300,11 @@ dlg {
 	enter = function(s)
 		p [[-- Приветствую. Что будем пить? Или, может быть, вы голодны?]];
 		bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
+		deletebutton();
 		end;
 	exit = function()
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+		createbutton();
 		end;
 	phr = { -- начало фразы
 		only = true;
@@ -3185,9 +3333,11 @@ dlg {
 	enter = function(s)
 		p [[-- Приветствую. Чего желаете?]];
 		bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
+		deletebutton();
 		end;
 	exit = function()
-		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name)
+		createbutton(); 
 		end;
 	phr = { -- начало фразы
 		only = true;
@@ -3210,9 +3360,11 @@ dlg {
 	enter = function(s)
 		p [[-- Приветствую. Чего желаете?]];
 		bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
+		deletebutton();
 		end;
 	exit = function()
-		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name)
+		createbutton(); 
 		end;
 	phr = { -- начало фразы
 		only = true;
@@ -3235,9 +3387,11 @@ dlg {
 	enter = function(s)
 		p [[-- Приветствую. Чего желаете?]];
 		bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
+		deletebutton();
 		end;
 	exit = function()
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+		createbutton();
 		end;
 	phr = { -- начало фразы
 		only = true;
@@ -3260,9 +3414,11 @@ dlg {
 	enter = function(s)
 		p [[-- Приветствую. Чего желаете?]];
 		bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
+		deletebutton();
 		end;
 	exit = function()
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+		createbutton();
 		end;
 	phr = { -- начало фразы
 		only = true;
@@ -3420,9 +3576,11 @@ dlg {
 	enter = function(s)
 		p [[-- Далеко собрался? Верни табурет на место!]];
 		bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
+		deletebutton();
 		end;
 	exit = function()
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+		createbutton();
 		end;
 	phr = { -- начало фразы
 		{'Ээ... Я... Это...','-- Вор ты, вот ты кто! ',
@@ -3545,9 +3703,11 @@ dlg {
 	enter = function(s)
 		p [[-- Ну привет, привет. Чего тебе, путник?]];
 		bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
+		deletebutton();
 		end;
 	exit = function()
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+		createbutton();
 		end;
 	phr = { -- начало фразы
 		only = true;
@@ -3571,9 +3731,11 @@ dlg {
 		p [[-- О, пиво! Спасибо! А почему оно в кувшине? Мог бы и кружку найти. Но ладно. Договор есть договор. Держи свою муку.]];
 		take('muka'); remove('kuvshinzpivom'); mukaest = true;
 		bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
+		deletebutton();
 		end;
 	exit = function()
-		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name)
+		createbutton(); 
 		end;
 	phr = { -- начало фразы
 		only = true;
@@ -3596,9 +3758,11 @@ dlg {
 		p [[-- А, это ты. Принес тараньку?]];
 		take('muka'); remove('kuvshinzpivom');
 		bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
+		deletebutton();
 		end;
 	exit = function()
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+		createbutton();
 		end;
 	phr = { -- начало фразы
 		only = true;
@@ -3816,4 +3980,73 @@ obj {
 		zanaveskaopen = not zanaveskaopen;
 --	if not zanaveskaopen then zanaveskaopen = true else zanaveskaopen = false end
 		end;
+}
+
+createbutton = function()
+	D {"control_panel", "img", "gfx/options_menu.png", x = 670, y = 569, click = true, z = -1}
+	end;
+deletebutton = function()
+	D { "control_panel" }
+	end;
+
+
+room {
+	nam = 'control_room';
+	disp = 'Панель управления';
+	noinv = true;
+	enter = function()
+		weareincontrol = true;
+		bg_name = 'gfx/bg_options.png' theme.gfx.bg (bg_name) 
+		deletebutton();
+		end;
+	decor = function()
+	p ( fmt.c('Выберите язык:') );
+	p ( fmt.c('{russian|Русский}, {english|Английский}, {ukrainian|Украинский}') );
+	p ( fmt.c('^^{enableeveningmode|Включить вечер}.') );
+	p ( fmt.c('^^{@ walkout|К игре}') );
+	end;
+	exit = function()
+		weareincontrol = false;
+		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+		createbutton(); 
+		end;
+	obj = {'russian', 'english', 'ukrainian', 'enableeveningmode'};
+}
+
+obj {
+	nam = 'russian';
+	act = function()
+	ru = true;
+	en = false;
+	ua = false;
+	p ( fmt.c('Язык успешно изменен!') );
+	end;
+}
+
+obj {
+	nam = 'english';
+	act = function()
+	ru = false;
+	en = true;
+	ua = false;
+	p ( fmt.c('Language successfully changed!') );
+	end;
+}
+
+obj {
+	nam = 'ukrainian';
+	act = function()
+	ru = false;
+	en = false;
+	ua = true;
+	p ( fmt.c('Мову успішно змінено!') );
+	end;
+}
+
+obj {
+	nam = 'enableeveningmode';
+	act = function()
+	eveningenabled = true;
+	p ( fmt.c('Теперь наступит вечер. Но если только вы в деревне.') );
+	end;
 }
