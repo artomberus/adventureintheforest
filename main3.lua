@@ -1001,8 +1001,10 @@ obj { -- озеро
 		elseif (w^'udochka_with_chervi' and vedrostand and frsttime ) then p[[Наконец-то! Ты закинул удочку в озеро. Через некоторое время тебе показалось, что поплавок задергался. Ты потянул за удочку, но выловил только листик какого-то ненужного тебе растения. Может, стоит попытаться снова? ]] frsttime = false snd.play('snd/zakinul.ogg', 1) wr=wr+1; test(); return
 		elseif (w^'udochka_with_chervi' and vedrostand and scndtime ) then p[[Ты второй раз закинул удочку. Долго сидел, выжидал. Наконец, увидел - клюет! Ты аккуратно, правильным движением подкосил удочку, и... снова неудача. Да что же такое? ]] scndtime = false snd.play('snd/zakinul.ogg', 1) wr=wr+1; test(); return
 		elseif (w^'udochka_with_chervi' and vedrostand and thrdtime ) then clickmute = true snd.play('snd/zakinul.ogg', 1) walk 'goldfishdlg' wr=wr+1; test(); return
-		elseif w^'key' then
+		elseif w^'key' and not brokenwithtopor then
 			p [[Глупо выбрасывать ключ, он еще пригодится.]] return
+		elseif w^'key' and brokenwithtopor then
+			p [[Ты выбросил ненужный теперь ключ в озеро...]] remove('key') snd.play('snd/zakinul.ogg', 1) return
 		elseif w^'vedrofull' then
 			p [[В ведре уже есть вода.]] return
 		elseif w^'vedro' then
@@ -2283,6 +2285,7 @@ obj {
 		elseif z^'apples' and not dalwater and not firsttalkwithstarik then  p [[-- Спасибо тебе, добрый человек! Теперь я молод. Но глаза мои по-прежнему больны... Только живая вода может излечить их и вернуть мне возможность видеть этот мир!]] dalapples = true remove('apples') -- end
 		elseif z^'apples' and firsttalkwithstarik then p [[Ты бы поговорил сначала с человеком...]]
 		elseif z^'kuvshinwithwater' and dalapples then p [[-- Спасибо тебе, добрый человек! Взамен я дарю тебе скатерть-самобранку! Пусть она выручает тебя в пути. Только помни - никому не рассказывай о ней! Если проболтаешься - беда будет.]] take ('samobranka') remove('kuvshinwithwater') haveskatert = true elseif z^'kuvshinwithwater' and not dalapples then p [[Старик умыл глаза водой из кувшина. ^^-- Спасибо тебе, добрый человек! Теперь я могу хорошо видеть. Но я ведь по-прежнему стар! Найди молодильные яблоки.]] dalwater = true dalvodu = true remove('kuvshinwithwater') end
+		if z^'topor' then p [[Откуда в тебе эта тяга всё крушить, ломать и убивать? Оставь старика в покое.]] end
 		end;
 };
 
