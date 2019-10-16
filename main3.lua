@@ -87,7 +87,7 @@ fmt.para = true; -- включить отступы
 
 --global 'language' ('ru')
 
---global { 
+--declare { 
 
 --phrases = {
 --    ru = {
