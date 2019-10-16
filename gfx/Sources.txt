@@ -1,6 +1,13 @@
-options_menu.png - взял оригинал изорбажения здесь - https://iconbird.com/view/39695_iconki_nastroyki_shesterenka_settings
+options.png & options_menu.png - взял оригинал изорбажения здесь: https://iconbird.com/view/39695_iconki_nastroyki_shesterenka_settings
 Требуется указание ссылки:
+[[
 Streamline Icon Set - Free Pack
 ===============================
 Designer: Webalys (https://www.iconfinder.com/webalys)
 License: Free for commercial use (Include link to authors website)
+]]
+
+info_menu.png - взял оригинал изображения здесь - https://www.kissclipart.com/info-icon-png-clipart-computer-icons-clip-art-vcjssy/
+Ничего не требуется, но всё равно указываю. Лицензия CC0 Creative Commons.
+
+

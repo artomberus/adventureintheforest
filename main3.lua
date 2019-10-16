@@ -1,7 +1,7 @@
 --
--- The source code of the game (including images) is distributed under the MIT license. For the full text of the license, see the file LICENCE.txt, which is located in the game directory. Sounds, music - distributed under their own licenses, see snd/source.txt and mus/Copyright.txt
+-- The source code of the game (including images) is distributed under the MIT license. For the full text of the license, see the file LICENCE.txt, which is located in the game directory. Sounds, music - distributed under their own licenses, see snd/source.txt and mus/Copyright.txt Some images are distributed under their own licenses, see gfx/Sources.txt
 --
--- Исходный код игры (включая изображения) распространяется на условиях лицензии MIT. Полный текст лицензии см. в файле LICENCE.txt, который находится в каталоге с игрой. Звуки, музыка - распространяются под своими лицензиями, см. snd/source.txt и mus/Copyright.txt
+-- Исходный код игры (включая изображения) распространяется на условиях лицензии MIT. Полный текст лицензии см. в файле LICENCE.txt, который находится в каталоге с игрой. Звуки, музыка - распространяются под своими лицензиями, см. snd/source.txt и mus/Copyright.txt Некоторые изображения распространяются под собственными лицензиями, см. gfx/Sources.txt
 --
 -- $Name(ru): Лесное приключение $
 -- $Name(en): Adventure in the forest $
@@ -19,14 +19,19 @@ require "dbg"
 require "sprite"
 require "snapshots"
 loadmod "decor"
+loadmod "link"
 game.act = 'Не работает.';
 game.use = function ()
-	return p(phrases[rnd(#phrases)]);
+	if ru then return p(phrasesRU[rnd(#phrasesRU)]); end; -- мой вариант кода
+	if en then return p(phrasesEN[rnd(#phrasesEN)]); end;
+	if ua then return p(phrasesUA[rnd(#phrasesUA)]); end;
+--	p(phrases[language]); - вариант кода, который не сработал
 	end;
 
 game.inv = 'Зачем мне это?';
 xact.walk = walk
 xact.walkout = walkout
+
 function init ()
 	take 'статус'
 	take 'fonarik'
@@ -35,9 +40,11 @@ function init ()
 	createbutton();
 	end
 
-function game:ondecor()
+function game:ondecor(name)
 	clickmute = true;
-	walkin('control_room');
+	if name == 'control_panel' then walkin('control_room'); end;
+	if name == 'info_panel' then walkin('info_room'); end;
+	if name == 'statsclick' then p[[Да, это твой прогресс.]]; snd.play('snd/click.wav', 7); end;
 	end;
 
 exit = function()
@@ -77,12 +84,39 @@ snd.music_fading(2500) -- плавный переход музыки
 instead.fading = false; -- убрать фэйдинг для первой сцены, потом мы его включим.
 fmt.para = true; -- включить отступы
 
-global { -- Вариации "не получится".
-	phrases = {
+
+--global 'language' ('ru')
+
+--global { 
+
+--phrases = {
+--    ru = {
+--    [[Это не поможет.]],
+--    [[Это ни к чему.]],
+--    [[Это ни к чему не приведет.]],
+--    [[Не получится.]]
+--    } ;
+--   en = {
+--    [[This will not help.]],
+--    [[This is useless.]],
+--    [[This will not lead to anything.]],
+--    [[Not that.]]
+--	};
+--   ua = {
+--    [[Це не допоможе.]],
+--    [[Це ні до чого.]],
+--    [[Це ні до чого не приведе.]],
+--    [[Не вийде.]]
+--	}
+--}
+--}
+
+ declare { -- Вариации "не получится".
+	phrasesRU = {
 	[[Это не поможет.]],
 	[[Это ни к чему.]],
 	[[Это ни к чему не приведет.]],
---	[[Нет.]],
+ --	[[Нет.]],
 	[[Не то.]],
 	[[Непонятно...]],
 	[[Ничего не произошло.]],
@@ -91,14 +125,51 @@ global { -- Вариации "не получится".
 	[[Попробуй что-то другое.]],
 	[[И что ты хочешь получить в итоге?]],
 	[[Ну ты, конечно, и экспериментатор.]],
---	[[Если бы все предметы всегда сочетались - какой бы стала игра?]],
+ --	[[Если бы все предметы всегда сочетались - какой бы стала игра?]],
 	[[Больше так не делай.]],
 	[[Давай ты не будешь так больше делать, окей?]],
 	[[Методом проб и ошибок... Но не абсурда же?]],
 	[[Что ты делаешь?]], 
 	[[Не получится.]]
-	}
+	},
+	phrasesEN = {
+	[[This will not help.]],
+	[[This is useless.]],
+	[[This will not lead to anything.]],
+	[[Not that.]],
+	[[Unclear...]],
+	[[Nothing has happened.]],
+	[[Useless.]],
+	[[This makes no sense.]],
+	[[Try something else.]],
+	[[And what do you want to get as a result?]],
+	[[Well, you are an experimenter.]],
+	[[Don't do this anymore.]],
+	[[Come on, you won’t do that anymore, okay?]],
+	[[By trial and error... But not absurdity?]],
+	[[What are you doing?]], 
+	[[This will not work.]]
+	},
+	phrasesUA = {
+	[[Це не допоможе.]],
+	[[Це ні до чого.]],
+	[[Це ні до чого не приведе.]],
+	[[Не те.]],
+	[[Незрозуміло...]],
+	[[Нічого не сталося.]],
+	[[Марно.]],
+	[[В цьому немає ніякого сенсу.]],
+	[[Спробуй щось інше.]],
+	[[І що ж ти хочеш отримати в результаті?]],
+	[[Ну ти й експериментатор.]],
+	[[Більше так не роби.]],
+	[[Давай ти так не будеш робити більше, окей?]],
+	[[Методом проб і помилок... Але не абсурду ж?]],
+	[[Що ти робиш?]], 
+	[[Не вийде.]]
+	}  
 }
+
 
 global { -- Много разных переменных. В основном логические. На них построена вся игра.
 	wr = 0; -- Переменная, в которой считаем прогресс.
@@ -285,7 +356,7 @@ stat {
 
 global { -- Сообщения на перекрестке.
 	counter = 0;
-	inplaceofrespawn = {
+	inplaceofrespawnRU = {
 	[[Ты вернулся на место... чего?]],
 	[[Здесь, конечно, интересно стоять и рассматривать лес. Но, может, лучше куда-нибудь пойти и выяснить, где же ты находишься?]],
 	[[Интересно здесь, не так ли?]],
@@ -318,9 +389,79 @@ global { -- Сообщения на перекрестке.
 	[[Какая ты, дорога жизни?]],
 	[[Однако. Ходют тут всякие. Вместо того, чтобы делом заняться и спасти себя.]],
 	[[Поздравляю. Ты так часто возвращаешься в это место, что истратил все фразы, которые автор для тебя заготовил. Может, он сделал что-то не так? Или ты оказался любопытным.]],
-	[[ ]]
-	}
-}
+	[[ ]] 
+	},
+	inplaceofrespawnEN = {
+	[[You returned to the place... of what?]],
+	[[Here, of course, it is interesting to stand and look at the forest. But maybe it’s better to go somewhere and find out where you are?]],
+	[[Interesting here, right?]],
+	[[Are there any people who will look for you?]],
+	[[How long will you live in the forest without food and water?]],
+	[[Is there anyone alive here?]],
+	[[Go, go, do not hold back.]],
+	[[Tale of sense, if not of truth! Food for thought to honest youth. In your case, a fairy tale is pure truth.]],
+	[[Forest is the source of life, strength and health. But not for everyone and not always. It is a threat to you now.]],
+	[[Don’t drink, brother, water from the local lake - you’ll become a goat.]],
+--	[[A fool walks through the forest, looking for a fool stupider than himself...]], bad translation, this is not an insult, but a quote
+	[[From the place where it says "there is no passage" - it’s more logical to go to the place where it is. You're halfway now.]],
+	[[What remains after you?]],
+	[[If you need to choose between good and evil - what would you choose?]],
+	[[This story will test what you are worth...]],
+	[[If you have good intentions in your heart, you will remain alive.]],
+	[[Why is everything so clumsy painted?]],
+	[[Is it worth it to forbid a person to lie? If it were possible.]],
+	[[Do we need free will that leads to suffering and injustice?]],
+	[[Do you know that you are hungry?]],
+	[[Are you not afraid that now the wolf will run out from behind the bend and eat you?]],
+	[[You remember how comfortable and safe at home right now...]],
+	[[And yet all this is strange...]],
+	[[Do you believe in fairy tales?]],
+--	[[The universal great love. My bottomless piggy bank in the void...]],
+--	[[The universal great love. My secret gate in the void...]],
+	[[Who are you? How to understand you? What are you thinking, wandering around these forest thickets?]],
+	[[Movement is life. You can’t stand still - you grow into the ground.]],
+	[[I sincerely admire you reading all these phrases. Continue.]],
+	[[What are you, the way of life?]],
+	[[However. Everyones go here. Instead of doing business and saving yourself.]],
+	[[Congratulations. You return to this place so often that you spent all the phrases that the author has prepared for you. Maybe he did something wrong? Or you were curious.]],
+	[[ ]] 
+	},
+	inplaceofrespawnUA = {
+	[[Ти повернувся на місце ... чого?]],
+	[[Тут, звичайно, цікаво стояти і розглядати ліс. Але, може, краще кудись піти і з'ясувати, де ж ти знаходишся?]],
+	[[Цікаво тут, чи не так?]],
+	[[Загін не помітив втрати бійця ... Тебе хоч почнуть шукати?]],
+	[[Скільки ти проживеш в лісі, без їжі і води?]],
+	[[Тут є хто живий?]],
+	[[Іди-іди, не затримуйся.]],
+	[[Казка брехня, але в ній натяк... Ні, в твоєму випадку казка - чиста правда.]],
+	[[Ліс - джерело життя, сили і здоров'я. Але не для всіх і не завжди. Для тебе він зараз - загроза.]],
+	[[Не пий, братику, воду з озера місцевого - козликом станеш.]],
+--	[[Ходить дурачок лісом, шукає дурник дурніші себе ...]],
+	[[З місця, де пишуть "проходу немає" - логічніше йти в місце, де він таки є. А ти зараз на півдорозі.]],
+	[[Що залишиться після тебе?]],
+	[[Якщо треба вибрати між добром і злом - що б ти вибрав?]],
+	[[Ця історія перевірить, чого ти вартий...]],
+	[[Якщо в твоєму серці добрі наміри - ти залишишся живий.]],
+	[[Чому все так криво написано?]],
+	[[Чи варто заборонити людині брехати? Якби це було можливо.]],
+	[[Чи потрібна вільна воля, що призводить до страждання і несправедливості?]],
+	[[Ти голодний, знаєш це?]],
+	[[Ти не боїшся, що зараз із-за повороту вибіжить вовк і з'їсть тебе?]],
+	[[Ти згадуєш, як затишно і безпечно зараз вдома...]],
+	[[І все ж дивно все це...]],
+	[[Ти віриш у казки?]],
+--	[[Вселенська велика любов. Моя бездонна скарбничка в порожнечі ...]],
+--	[[Вселенська велика любов. Моя секретна хвіртка в порожнечі ...]],
+	[[Хто ти? Як зрозуміти тебе? Про що ти думаєш, блукаючи по цим лісових чагарниках?]],
+	[[Рух - це життя. Не можна стояти на місці - вростеш в землю.]],
+	[[Я щиро захоплююся тим, що ти читаєш всі ці фрази. Продовжуй.]],
+	[[Яка ти, дорога життя?]],
+	[[Однак. Ходять тут всякі. Замість того, щоб справою зайнятися і врятувати себе.]],
+	[[Вітаю. Ти так часто повертаєшся в це місце, що витратив усі фрази, які автор для тебе заготовив. Може, він зробив щось не так? Або ти виявився допитливим.]],
+	[[ ]] 
+	}  
+ }
 
 function inc(a) return a + 1 end; -- на всякий случай, может пригодятся
 function dec(a) return a - 1 end;
@@ -383,8 +524,12 @@ room {
 			return
 			end
 		if otherstarts then
-			counter = (counter +1)%#inplaceofrespawn
-			return p(inplaceofrespawn[counter]) -- пишем всякие сообщения при заходе на развилку
+			if ru then counter = (counter +1)%#inplaceofrespawnRU end
+			if en then counter = (counter +1)%#inplaceofrespawnEN end
+			if ua then counter = (counter +1)%#inplaceofrespawnUA end
+			if ru then return p(inplaceofrespawnRU[counter]) end -- пишем всякие сообщения при заходе на развилку
+			if en then return p(inplaceofrespawnEN[counter]) end
+			if ua then return p(inplaceofrespawnUA[counter]) end
 			end
 
 		end;
@@ -617,10 +762,10 @@ obj {
 	inv = function()
 		clickmute = true;
 			if isusercozel then 
+				waycounter = waycounter+1 snd.play('snd/sheep.ogg', 1)
 				if ru then return p'Ты попробовал взять фонарик в зубы, но это не очень хорошо получилось) Увы и ах.' end;
 				if en then return p'You tried to take a flashlight in your teeth, but it didn’t work out very well) Alas.' end;
 				if ua then return p'Ти спробував взяти ліхтарик в зуби, але це не дуже добре вийшло) На жаль.' end;
-		 waycounter = waycounter+1 snd.play('snd/sheep.ogg', 1)
 		else
 			if ru then return p 'Привычка держать в кармане маленький китайский динамо-фонарь на этот раз оказалась очень даже кстати.' end;
 			if en then return p 'The habit of holding a small Chinese dynamo flashlight in my pocket this time turned out to be very helpful.' end;
@@ -1253,6 +1398,7 @@ obj {
 	seen = false;
 	dsc = function(s)
 		if not s.seen then
+			uvideltopor = true;
 			if ru then return p'В траве {что-то} лежит.'; end;
 			if en then return p'There is {something} in the grass.' end;
 			if ua then return p'У траві {щось} лежить.'; end;
@@ -1260,7 +1406,6 @@ obj {
 			if ru then return p 'В траве ты увидел {топор|топор}!'; end;
 			if en then return p 'You saw an {топор|axe} in the grass!' end;
 			if ua then return p 'У траві ти помітив {топор|сокиру}!' end;
-			uvideltopor = true;
 		end
 		end;
 	act = function(s)
@@ -2945,12 +3090,18 @@ room {
 		if not eveningenabled and nopivoontable  and not have('nopivo') and not zabral then return 'gfx/33_2.png'; end;
 		if not eveningenabled and zabral and not have('nopivo') then return 'gfx/33.png'; end;
 		if not eveningenabled and have('nopivo') then return 'gfx/33_1.png'; end;
-		if eveningenabled and not have('pivo') and not have('nopivo') and not nopivoontable and not zabral then return 'gfx/33.png;gfx/daynight2/daynight_evening.png@0,0'; end;
-		if eveningenabled and have('pivo')  and not have('nopivo') and not nopivoontable and not zabral then return 'gfx/33_1.png;gfx/daynight2/daynight_evening.png@0,0'; end;
-		if eveningenabled and nopivoontable  and not have('nopivo') and not zabral then return 'gfx/33_2.png;gfx/daynight2/daynight_evening.png@0,0'; end;
-		if eveningenabled and zabral and not have('nopivo') then return 'gfx/33.png;gfx/daynight2/daynight_evening.png@0,0'; end;
-		if eveningenabled and have('nopivo') then return 'gfx/33_1.png;gfx/daynight2/daynight_evening.png@0,0'; end;
+		if eveningenabled and (evening > 5) and not have('pivo') and not have('nopivo') and not nopivoontable and not zabral then return 'gfx/33.png;gfx/daynight2/daynight_evening.png@0,0'; end;
+		if eveningenabled and (evening > 5) and have('pivo')  and not have('nopivo') and not nopivoontable and not zabral then return 'gfx/33_1.png;gfx/daynight2/daynight_evening.png@0,0'; end;
+		if eveningenabled and (evening > 5) and nopivoontable  and not have('nopivo') and not zabral then return 'gfx/33_2.png;gfx/daynight2/daynight_evening.png@0,0'; end;
+		if eveningenabled and (evening > 5) and zabral and not have('nopivo') then return 'gfx/33.png;gfx/daynight2/daynight_evening.png@0,0'; end;
+		if eveningenabled and (evening > 5) and have('nopivo') then return 'gfx/33_1.png;gfx/daynight2/daynight_evening.png@0,0'; end;
 		
+		if eveningenabled and not (evening > 5) and not have('pivo') and not have('nopivo') and not nopivoontable and not zabral then return 'gfx/33.png'; end;
+		if eveningenabled and not (evening > 5) and have('pivo')  and not have('nopivo') and not nopivoontable and not zabral then return 'gfx/33_1.png'; end;
+		if eveningenabled and not (evening > 5) and nopivoontable  and not have('nopivo') and not zabral then return 'gfx/33_2.png'; end;
+		if eveningenabled and not (evening > 5) and zabral and not have('nopivo') then return 'gfx/33.png'; end;
+		if eveningenabled and not (evening > 5) and have('nopivo') then return 'gfx/33_1.png'; end;
+
 		end;
 	obj = {'tobarmen', 'tositdown', 'tokartina'};
 	decor = function()
@@ -3983,16 +4134,21 @@ obj {
 }
 
 createbutton = function()
-	D {"control_panel", "img", "gfx/options_menu.png", x = 670, y = 569, click = true, z = -1}
+	D {"control_panel", "img", "gfx/options_menu.png", x = 695, y = 569, click = true, z = -1}
+	D {"info_panel", "img", "gfx/info_menu.png", x = 635, y = 567, click = true, z = -1}
+	D {"statsclick", "img", "gfx/statsclick.png", x = 635, y = 32, click = true, z = -1}
 	end;
 deletebutton = function()
 	D { "control_panel" }
+	D { "info_panel" }
+	D { "statsclick" }
 	end;
 
 
 room {
 	nam = 'control_room';
-	disp = 'Панель управления';
+	pic = 'gfx/options.png';
+	disp = false;
 	noinv = true;
 	enter = function()
 		weareincontrol = true;
@@ -4000,10 +4156,11 @@ room {
 		deletebutton();
 		end;
 	decor = function()
-	p ( fmt.c('Выберите язык:') );
-	p ( fmt.c('{russian|Русский}, {english|Английский}, {ukrainian|Украинский}') );
+--	p ( fmt.c( '^'..fmt.img('gfx/options.png')..'^') );
+	p ( fmt.c('Выберите язык игры:') );
+	p ( fmt.c('{russian|Русский}, {english|English}, {ukrainian|Українська}') );
 	p ( fmt.c('^^{enableeveningmode|Включить вечер}.') );
-	p ( fmt.c('^^{@ walkout|К игре}') );
+	p ( fmt.c('^^{@ walkout|К ИГРЕ}') );
 	end;
 	exit = function()
 		weareincontrol = false;
@@ -4015,32 +4172,17 @@ room {
 
 obj {
 	nam = 'russian';
-	act = function()
-	ru = true;
-	en = false;
-	ua = false;
-	p ( fmt.c('Язык успешно изменен!') );
-	end;
+	act = function() ru = true; en = false; ua = false;  p ( fmt.c('Язык успешно изменен!') ); end;
 }
 
 obj {
 	nam = 'english';
-	act = function()
-	ru = false;
-	en = true;
-	ua = false;
-	p ( fmt.c('Language successfully changed!') );
-	end;
+	act = function() ru = false; en = true; ua = false;  p ( fmt.c('Language successfully changed!') ); end;
 }
 
 obj {
 	nam = 'ukrainian';
-	act = function()
-	ru = false;
-	en = false;
-	ua = true;
-	p ( fmt.c('Мову успішно змінено!') );
-	end;
+	act = function() ru = false; en = false; ua = true;  p ( fmt.c('Мову успішно змінено!') ); end;
 }
 
 obj {
@@ -4049,4 +4191,32 @@ obj {
 	eveningenabled = true;
 	p ( fmt.c('Теперь наступит вечер. Но если только вы в деревне.') );
 	end;
+}
+
+
+room {
+	nam = 'info_room';
+	disp = false;
+	noinv = true;
+	enter = function()
+		weareincontrol = true;
+		bg_name = 'gfx/bg_options.png' theme.gfx.bg (bg_name) 
+		deletebutton();
+		end;
+	decor = function()
+	p ( fmt.c( '^'..fmt.img('gfx/icon.png')..'^') );
+	p ( fmt.c('Лесное приключение^^ Текстографическая игра на движке INSTEAD, квест. ^^Автор - Петрук Дмитрий. В сети я представлен под никами: Amberit(92), Artorius, Artomberus.') );
+	p ( fmt.c('^ Найти меня можно в Telegram: @amberit92') );
+	p ( fmt.c('^^ На форуме INSTEAD: ^ {$link|http://instead-games.ru/forum/index.php?p=/profile/artomberus}') );
+	p ( fmt.c('^^ Адрес игры на GitHub: ^ {$link|https://github.com/artomberus/adventureintheforest}') );
+	p ( fmt.c('^^ Также посмотрите мою галерею фотографий природы: ^ {$link|https://www.deviantart.com/artomberus/gallery/}') );
+	p ( fmt.c('^^ Ещё один мой проект на движке INSTEAD: ^ {$link|http://instead-games.ru/game.php?ID=329}') );
+	p ( fmt.c('^^Спасибо всем, кто помогал и помогает мне с инстедом и разработкой. Позднее я напишу здесь подробно. А теперь...') );
+	p ( fmt.c('^^{@ walkout|К ИГРЕ!}') );
+	end;
+	exit = function()
+		weareincontrol = false;
+		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+		createbutton(); 
+		end;
 }

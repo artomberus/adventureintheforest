@@ -1,5 +1,6 @@
-The following license applies to the source code and images of the game.
+The following license applies to the source code and images of the game (with some exeptions for images, see gfx/Sources.txt).
 Sounds, music - distributed under their own licenses, see snd/source.txt and mus/Copyright.txt
+link.lua, color2rgb.lua, decor.lua - are INSTEAD modules, MIT licensed, written by Peter Kosyh <p.kosyh at gmail.com> 
 
 Copyright (c) 2019, Dmitry Petruk
 
@@ -16,8 +17,9 @@ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMA
 WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 OR OTHER DEALINGS IN THE SOFTWARE. 
 
-Следующая лицензия распространяется на исходный код и изображения игры.
+Следующая лицензия распространяется на исходный код и изображения игры (кроме некоторых изображений, смотри gfx/Sources.txt).
 Звуки, музыка - распространяются под своими лицензиями, см. snd/source.txt и mus/Copyright.txt
+link.lua, color2rgb.lua, decor.lua - модули INSTEAD, лицензированы под MIT, автор - Пётр Косых <p.kosyh at gmail.com> 
 
 Copyright (c) 2019, Дмитрий Петрук
 

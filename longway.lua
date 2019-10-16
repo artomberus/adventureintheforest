@@ -1,7 +1,7 @@
 --
--- The source code of the game (including images) is distributed under the MIT license. For the full text of the license, see the file LICENCE.txt, which is located in the game directory. Sounds, music - distributed under their own licenses, see snd/source.txt and mus/Copyright.txt
+-- The source code of the game (including images) is distributed under the MIT license. For the full text of the license, see the file LICENCE.txt, which is located in the game directory. Sounds, music - distributed under their own licenses, see snd/source.txt and mus/Copyright.txt Some images are distributed under their own licenses, see gfx/Sources.txt
 --
--- Исходный код игры (включая изображения) распространяется на условиях лицензии MIT. Полный текст лицензии см. в файле LICENCE.txt, который находится в каталоге с игрой. Звуки, музыка - распространяются под своими лицензиями, см. snd/source.txt и mus/Copyright.txt
+-- Исходный код игры (включая изображения) распространяется на условиях лицензии MIT. Полный текст лицензии см. в файле LICENCE.txt, который находится в каталоге с игрой. Звуки, музыка - распространяются под своими лицензиями, см. snd/source.txt и mus/Copyright.txt Некоторые изображения распространяются под собственными лицензиями, см. gfx/Sources.txt
 --
 
 global {
