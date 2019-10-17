@@ -67,6 +67,9 @@ function game:ondecor(name, x, y)
 	if en and name == 'clickonscene' and clickonsceneenabled then p'You clicked on the scene area. Here is just a picture.' end;
 	if ua and name == 'clickonscene' and clickonsceneenabled then p'Ти натиснув на область сцени. Тут просто зображення.' end;
 	if name == 'traces' then x = rnd(600); y = rnd(500); walkin('control_room')  end;
+	if name == 'ruslang' then ru = true; en = false; ua = false; rulangimage = "gfx/russian_selected.png"; enlangimage = "gfx/english.png"; ualangimage = "gfx/ukrainian.png";  walk('main')  end;
+	if name == 'englang' then ru = false; en = true; ua = false; enlangimage = "gfx/english_selected.png"; rulangimage = "gfx/russian.png"; ualangimage = "gfx/ukrainian.png"; walk('main')  end;
+	if name == 'ukrlang' then ru = false; en = false; ua = true; ualangimage = "gfx/ukrainian_selected.png"; enlangimage = "gfx/english.png"; rulangimage = "gfx/russian.png"; walk('main')  end;
 	end;
 
 exit = function()
@@ -344,6 +347,9 @@ global { -- Много разных переменных. В основном л
 	cursorstate = 1; -- состояние размера курсора. 0 - минимум, 1 - обычный, 2 - максимум
 	fromwhere = '';
 	clickonsceneenabled = false; -- включены ли клики на сцене
+	rulangimage = "gfx/russian.png";
+	enlangimage = "gfx/english.png";
+	ualangimage = "gfx/ukrainian.png";
 }
 
 stat {
@@ -503,14 +509,19 @@ room { -- Здесь начинается наше путешествие, не�
 		end;
 	pic = 'gfx/0.png';
 	enter = function()
-		snd.music 'mus/Beginning.ogg' bg_name = 'gfx/bg_good.png' theme.gfx.bg (bg_name) 
+		snd.music 'mus/Beginning.ogg' bg_name = 'gfx/bg_intro.png' theme.gfx.bg (bg_name) 
 		deletebutton();
---		deleteclickonscene();
+		createruslang();
+		createenglang();
+		createukrlang();
 		end;
 	exit = function()
 		instead.fading = true; 
 		createbutton();
 		createclickonscene();
+		deleteruslang();
+		deleteenglang();
+		deleteukrlang();
 		end;
 	dsc = function()
 		if ru then p [[ Ты уснул, как обычно, к полуночи. Сон был беспокойный, грезились инопланетяне, склонившиеся над головой, но как только просыпался в ужасе - видел всё ту же привычную комнату. Успокоившись, что мир за время твоего сна никуда не делся, ты снова засыпал. Так несколько раз... Но в конце-концов - страхи имеют свойство материализоваться. Уже сквозь сон ты услышал, что воздух стал чище, холоднее. Что-то не так. Ты резко открыл глаза...  
@@ -532,7 +543,6 @@ room {
 	pic = 'gfx/1.png';
 	enter = function()
 		snd.music 'mus/Atlantis.ogg' if firststart then snd.play('snd/breath.ogg', 1) end   bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
---		createclickonscene();
 		end;
 	dsc = function (i)
 		if firststart then
@@ -555,7 +565,7 @@ room {
 	decor = function()
 		if ru then return "Ты в лесу! Деревья закрывают все пути отступления, есть лишь расхоженная тропа, на которой ты стоишь. Ты можешь пойти налево, направо, а можешь пойти прямо - в центре развилки растет огромный {dub|дуб}. Еще можно развернуться и пойти назад. "; end;	
 		if en then return "You are in the forest! Trees block all escape routes, there is only a well-groomed path on which you stand. You can go left, right, or you can go straight ahead - a huge {dub|oak} grows in the center of the crossway. You can still turn around and go back. "; end;	
-		if ua then return "Ти в лісі! Дерева закривають всі шляхи до відступу, є лише росходжена стежка, на якій ти знаходишся. Ти можеш піти наліво, направо, а можеш пійти прямо - в центрі перехрестя росте величезний {dub|дуб}. Ще можна розвернутися й піти назад. "; end;	
+		if ua then return "Ти в лісі! Дерева закривають всі шляхи до відступу, є лише росходжена стежка, на якій ти знаходишся. Ти можеш піти наліво, направо, а можеш піти прямо - в центрі перехрестя росте величезний {dub|дуб}. Ще можна розвернутися й піти назад. "; end;	
 		end;
 	obj = {'dub'};
 	way = {path {function()
@@ -4226,6 +4236,26 @@ createtraces = function()
 deletetraces = function()
 	D { "traces" }
 	end;
+
+createruslang = function()
+	D {"ruslang", "img", rulangimage, x = 615, y = 33, click = true, z = -1}
+	end;
+deleteruslang = function()
+	D { "ruslang" }
+	end;
+createenglang = function()
+	D {"englang", "img", enlangimage, x = 615, y = 74, click = true, z = -1}
+	end;
+deleteenglang = function()
+	D { "englang" }
+	end;
+createukrlang = function()
+	D {"ukrlang", "img", ualangimage, x = 615, y = 115, click = true, z = -1}
+	end;
+deleteukrlang = function()
+	D { "ukrlang" }
+	end;
+
 
 room {
 	nam = 'control_room';
