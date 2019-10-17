@@ -36,18 +36,19 @@ function init ()
 	take 'maintain'
 	lifeon 'maintain'
 	createbutton();
-	if LANG == 'ru' then ru = true; en = false; ua = false; end; 
-	if LANG == 'en' then ru = false; en = true; ua = false; end; 
-	if LANG == 'uk' then ru = false; en = false; ua = true; end; 
+	if LANG == 'ru' then setru(); end; 
+	if LANG == 'en' then seten(); end; 
+	if LANG == 'uk' then setua(); end; 
 	end
 
 function game:ondecor(name, x, y)
 	clickmute = true;
 	if name == 'control_panel' then walkin('control_room'); end;
 	if name == 'info_panel' then walkin('info_room'); end;
-	if name == 'statsclick' and ru then p[[Да, это твой {@ walk stats|прогресс}.]]; snd.play('snd/click.wav', 7); end;
-	if name == 'statsclick' and en then p[[Yes, this is your progress.]]; snd.play('snd/click.wav', 7); end;
-	if name == 'statsclick' and ua then p[[Так, це твій прогрес.]]; snd.play('snd/click.wav', 7); end;
+	if name == 'statsclick' and infobarshow then deleteinfobar(); theme.gfx.bg (bg_name) return std.nop() end; 
+	if name == 'statsclick' and ru and not infobarshow then p[[Да, это твой {@ walk stats|прогресс}.]]; snd.play('snd/click.wav', 7); end;
+	if name == 'statsclick' and en and not infobarshow then p[[Yes, this is your progress.]]; snd.play('snd/click.wav', 7); end;
+	if name == 'statsclick' and ua and not infobarshow then p[[Так, це твій прогрес.]]; snd.play('snd/click.wav', 7); end;
 		if name == 'cursor_usual' then theme.gfx.cursor ('gfx/inv/cursor.png', 'gfx/inv/cursoruse.png', 0 , 0); cursorstate = 0;
 			if ru then p ( fmt.c('^Как пожелаете. Задан размер курсора: обычный.') ); end;
 			if en then p ( fmt.c('^As you wish. Specified cursor size: normal.') ); end;
@@ -67,9 +68,10 @@ function game:ondecor(name, x, y)
 	if en and name == 'clickonscene' and clickonsceneenabled then p'You clicked on the scene area. Here is just a picture.' end;
 	if ua and name == 'clickonscene' and clickonsceneenabled then p'Ти натиснув на область сцени. Тут просто зображення.' end;
 	if name == 'traces' then x = rnd(600); y = rnd(500); walkin('control_room')  end;
-	if name == 'ruslang' then ru = true; en = false; ua = false; rulangimage = "gfx/russian_selected.png"; enlangimage = "gfx/english.png"; ualangimage = "gfx/ukrainian.png";  walk('main')  end;
-	if name == 'englang' then ru = false; en = true; ua = false; enlangimage = "gfx/english_selected.png"; rulangimage = "gfx/russian.png"; ualangimage = "gfx/ukrainian.png"; walk('main')  end;
-	if name == 'ukrlang' then ru = false; en = false; ua = true; ualangimage = "gfx/ukrainian_selected.png"; enlangimage = "gfx/english.png"; rulangimage = "gfx/russian.png"; walk('main')  end;
+	if name == 'ruslang' then setru(); rulangimage = "gfx/russian_selected.png"; enlangimage = "gfx/english.png"; ualangimage = "gfx/ukrainian.png";  walk('main')  end;
+	if name == 'englang' then seten(); enlangimage = "gfx/english_selected.png"; rulangimage = "gfx/russian.png"; ualangimage = "gfx/ukrainian.png"; walk('main')  end;
+	if name == 'ukrlang' then setua(); ualangimage = "gfx/ukrainian_selected.png"; enlangimage = "gfx/english.png"; rulangimage = "gfx/russian.png"; walk('main')  end;
+	if name == 'keys_infobar' and infobarshow then deleteinfobar(); theme.gfx.bg (bg_name) return std.nop() end; 
 	end;
 
 exit = function()
@@ -81,6 +83,10 @@ managesound = function()
 	if not clickmute and not weareincontrol then snd.play('snd/click.wav', 1) end;
 	clickmute = false;
  	end;
+
+setru = function() ru = true; en = false; ua = false; end;
+seten = function() ru = false; en = true; ua = false; end;
+setua = function() ru = false; en = false; ua = true; end;
 
 test = function() -- включаю её, когда надо отследить, где добавился опыт
 --	p'+EXP';
@@ -192,8 +198,8 @@ global { -- Много разных переменных. В основном л
 	rightwaychoosen = false;
 	leftwaychoosen = false; -- выбор одного из путей
 	straightwaychoosen = false;
-	ru = true; -- маркеры языка...
-	en = false;
+	ru = false;
+	en = true; -- маркеры языка... Если локаль инстеда одна из этих трех - они будут выбраны соответственно. Если локаль не одна из этих трех - то предлагаться будет англоязычная версия игры, как, вероятно, более понятная
 	ua = false;
 	weareincontrol = false; -- находимся ли мы в контрольной панели
 	afterriver = false; -- прошел ли реку, нужно для прогресса
@@ -351,6 +357,7 @@ global { -- Много разных переменных. В основном л
 	enlangimage = "gfx/english.png";
 	ualangimage = "gfx/ukrainian.png";
 	passedintro = false; -- прошли ли интро
+	infobarshow = false; -- показан ли инфобар о клавишах
 }
 
 stat {
@@ -4258,6 +4265,14 @@ deleteukrlang = function()
 	D { "ukrlang" }
 	end;
 
+createinfobar = function()
+	D {"keys_infobar", "img", "gfx/keys_infobar.png", x = 0, y = 0, click = true, z = -1}
+	infobarshow = true;
+	end;
+deleteinfobar = function()
+	D { "keys_infobar" }
+	infobarshow = false;
+	end;
 
 room {
 	nam = 'control_room';
@@ -4305,17 +4320,17 @@ room {
 
 obj {
 	nam = 'russian';
-	act = function() ru = true; en = false; ua = false; language = 'ru'; p ( fmt.c('^Язык успешно изменен!') ); end;
+	act = function() setru(); language = 'ru'; p ( fmt.c('^Язык успешно изменен!') ); end;
 }
 
 obj {
 	nam = 'english';
-	act = function() ru = false; en = true; ua = false; language = 'en'; p ( fmt.c('^Language successfully changed!') ); end;
+	act = function() seten(); language = 'en'; p ( fmt.c('^Language successfully changed!') ); end;
 }
 
 obj {
 	nam = 'ukrainian';
-	act = function() ru = false; en = false; ua = true; language = 'ua'; p ( fmt.c('^Мову успішно змінено!') ); end;
+	act = function() setua(); language = 'ua'; p ( fmt.c('^Мову успішно змінено!') ); end;
 }
 
 obj {
@@ -4419,30 +4434,45 @@ room {
 --end;
 
 function keys:filter(press, key) -- код для того, чтобы узнавать коды клавиш
-	if key == 'up' or key == 'down' or key == 'left' or key == 'right' or key == 'return' or key == 'space' then return press
-	end
+	return press
+--	if key == 'up' or key == 'down' or key == 'left' or key == 'right' or key == 'return' or key == 'space' or key == 'o' or --key == 'k' or key == 'i' then return press
+--	end
 end;
 game.onkey = function(s, press, key)
-	if not passedintro and key == 'up' and ualangimage ~= "gfx/ukrainian_selected.png" and rulangimage ~= "gfx/russian_selected.png" and enlangimage ~= "gfx/english_selected.png" then ualangimage = "gfx/ukrainian_selected.png"; ru = false; en = false; ua = true; clickmute = true; walk('main') return end; -- если не выбрали, и жмем вверх
-	if not passedintro and key == 'down' and rulangimage ~= "gfx/russian_selected.png" and enlangimage ~= "gfx/english_selected.png" and ualangimage ~= "gfx/ukrainian_selected.png" then rulangimage = "gfx/russian_selected.png"; ru = true; en = false; ua = false; clickmute = true; walk('main') return end; -- если не выбрали, и жмем вниз
-	if not passedintro and key == 'up' and rulangimage == "gfx/russian_selected.png" then rulangimage = "gfx/russian.png"; ualangimage = "gfx/ukrainian_selected.png"; ru = false; en = false; ua = true; clickmute = true; walk('main') return end;
-	if not passedintro and key == 'up' and enlangimage == "gfx/english_selected.png" then enlangimage = "gfx/english.png"; rulangimage = "gfx/russian_selected.png"; ru = true; en = false; ua = false; clickmute = true; walk('main') return end;
-	if not passedintro and key == 'up' and ualangimage == "gfx/ukrainian_selected.png" then ualangimage = "gfx/ukrainian.png"; enlangimage = "gfx/english_selected.png"; ru = false; en = true; ua = false; clickmute = true; walk('main') return end;
-	if not passedintro and key == 'down' and ualangimage == "gfx/ukrainian_selected.png" then ualangimage = "gfx/ukrainian.png"; rulangimage = "gfx/russian_selected.png"; ru = true; en = false; ua = false; clickmute = true; walk('main') return end;
-	if not passedintro and key == 'down' and enlangimage == "gfx/english_selected.png" then enlangimage = "gfx/english.png"; ualangimage = "gfx/ukrainian_selected.png"; ru = false; en = false; ua = true; clickmute = true; walk('main') return end;
-	if not passedintro and key == 'down' and rulangimage == "gfx/russian_selected.png" then rulangimage = "gfx/russian.png"; enlangimage = "gfx/english_selected.png"; ru = false; en = true; ua = false; clickmute = true; walk('main') return end;
+	if not passedintro and key == 'up' and ualangimage ~= "gfx/ukrainian_selected.png" and rulangimage ~= "gfx/russian_selected.png" and enlangimage ~= "gfx/english_selected.png" then ualangimage = "gfx/ukrainian_selected.png"; setua(); clickmute = true; walk('main') return end; -- если не выбрали, и жмем вверх
+	if not passedintro and key == 'down' and rulangimage ~= "gfx/russian_selected.png" and enlangimage ~= "gfx/english_selected.png" and ualangimage ~= "gfx/ukrainian_selected.png" then rulangimage = "gfx/russian_selected.png"; setru(); clickmute = true; walk('main') return end; -- если не выбрали, и жмем вниз
+	if not passedintro and key == 'up' and rulangimage == "gfx/russian_selected.png" then rulangimage = "gfx/russian.png"; ualangimage = "gfx/ukrainian_selected.png"; setua(); clickmute = true; walk('main') return end;
+	if not passedintro and key == 'up' and enlangimage == "gfx/english_selected.png" then enlangimage = "gfx/english.png"; rulangimage = "gfx/russian_selected.png"; setru(); clickmute = true; walk('main') return end;
+	if not passedintro and key == 'up' and ualangimage == "gfx/ukrainian_selected.png" then ualangimage = "gfx/ukrainian.png"; enlangimage = "gfx/english_selected.png"; seten(); clickmute = true; walk('main') return end;
+	if not passedintro and key == 'down' and ualangimage == "gfx/ukrainian_selected.png" then ualangimage = "gfx/ukrainian.png"; rulangimage = "gfx/russian_selected.png"; setru(); clickmute = true; walk('main') return end;
+	if not passedintro and key == 'down' and enlangimage == "gfx/english_selected.png" then enlangimage = "gfx/english.png"; ualangimage = "gfx/ukrainian_selected.png"; setua(); clickmute = true; walk('main') return end;
+	if not passedintro and key == 'down' and rulangimage == "gfx/russian_selected.png" then rulangimage = "gfx/russian.png"; enlangimage = "gfx/english_selected.png"; seten(); clickmute = true; walk('main') return end;
 
-	if not passedintro and key == 'left' and ualangimage ~= "gfx/ukrainian_selected.png" and rulangimage ~= "gfx/russian_selected.png" and enlangimage ~= "gfx/english_selected.png" then ualangimage = "gfx/ukrainian_selected.png"; ru = false; en = false; ua = true; clickmute = true; walk('main') return end; -- если не выбрали, и жмем влево
-	if not passedintro and key == 'right' and rulangimage ~= "gfx/russian_selected.png" and enlangimage ~= "gfx/english_selected.png" and ualangimage ~= "gfx/ukrainian_selected.png" then rulangimage = "gfx/russian_selected.png"; ru = true; en = false; ua = false; clickmute = true; walk('main') return end; -- если не выбрали, и жмем вправо
-	if not passedintro and key == 'left' and rulangimage == "gfx/russian_selected.png" then rulangimage = "gfx/russian.png"; ualangimage = "gfx/ukrainian_selected.png"; ru = false; en = false; ua = true; clickmute = true; walk('main') return end;
-	if not passedintro and key == 'left' and ualangimage == "gfx/ukrainian_selected.png" then ualangimage = "gfx/ukrainian.png"; enlangimage = "gfx/english_selected.png"; ru = false; en = true; ua = false; clickmute = true; walk('main') return end;
-	if not passedintro and key == 'left' and enlangimage == "gfx/english_selected.png" then enlangimage = "gfx/english.png"; rulangimage = "gfx/russian_selected.png"; ru = true; en = false; ua = false; clickmute = true; walk('main') return end;
-	if not passedintro and key == 'right' and rulangimage == "gfx/russian_selected.png" then rulangimage = "gfx/russian.png"; enlangimage = "gfx/english_selected.png"; ru = false; en = true; ua = false; clickmute = true; walk('main') return end;
-	if not passedintro and key == 'right' and ualangimage == "gfx/ukrainian_selected.png" then ualangimage = "gfx/ukrainian.png"; rulangimage = "gfx/russian_selected.png"; ru = true; en = false; ua = false; clickmute = true; walk('main') return end;
-	if not passedintro and key == 'right' and enlangimage == "gfx/english_selected.png" then enlangimage = "gfx/english.png"; ualangimage = "gfx/ukrainian_selected.png"; ru = false; en = false; ua = true; clickmute = true; walk('main') return end;
+	if not passedintro and key == 'left' and ualangimage ~= "gfx/ukrainian_selected.png" and rulangimage ~= "gfx/russian_selected.png" and enlangimage ~= "gfx/english_selected.png" then ualangimage = "gfx/ukrainian_selected.png"; setua(); clickmute = true; walk('main') return end; -- если не выбрали, и жмем влево
+	if not passedintro and key == 'right' and rulangimage ~= "gfx/russian_selected.png" and enlangimage ~= "gfx/english_selected.png" and ualangimage ~= "gfx/ukrainian_selected.png" then rulangimage = "gfx/russian_selected.png"; setru(); clickmute = true; walk('main') return end; -- если не выбрали, и жмем вправо
+	if not passedintro and key == 'left' and rulangimage == "gfx/russian_selected.png" then rulangimage = "gfx/russian.png"; ualangimage = "gfx/ukrainian_selected.png"; setua(); clickmute = true; walk('main') return end;
+	if not passedintro and key == 'left' and ualangimage == "gfx/ukrainian_selected.png" then ualangimage = "gfx/ukrainian.png"; enlangimage = "gfx/english_selected.png"; seten(); clickmute = true; walk('main') return end;
+	if not passedintro and key == 'left' and enlangimage == "gfx/english_selected.png" then enlangimage = "gfx/english.png"; rulangimage = "gfx/russian_selected.png"; setru(); clickmute = true; walk('main') return end;
+	if not passedintro and key == 'right' and rulangimage == "gfx/russian_selected.png" then rulangimage = "gfx/russian.png"; enlangimage = "gfx/english_selected.png"; seten(); clickmute = true; walk('main') return end;
+	if not passedintro and key == 'right' and ualangimage == "gfx/ukrainian_selected.png" then ualangimage = "gfx/ukrainian.png"; rulangimage = "gfx/russian_selected.png"; setru(); clickmute = true; walk('main') return end;
+	if not passedintro and key == 'right' and enlangimage == "gfx/english_selected.png" then enlangimage = "gfx/english.png"; ualangimage = "gfx/ukrainian_selected.png"; setua(); clickmute = true; walk('main') return end;
 	
 	if not passedintro and key == 'return' then walk('start') return end;
 	if not passedintro and key == 'space' then walk('start') return end;
---	p("Нажата: ", key)
-	if not passedintro then return true else return false end;
+--	p("Нажата: ", key);
+	if passedintro and key == 'i' and not infobarshow and not weareincontrol then walkin('info_room'); return end;
+	if passedintro and key == 'o' and not infobarshow and not weareincontrol then walkin('control_room'); return end;
+	if passedintro and key == 'k' and not infobarshow then createinfobar(); theme.gfx.bg (bg_name) return std.nop() end;
+	if passedintro and key == 'k' and infobarshow then deleteinfobar();  theme.gfx.bg (bg_name) return std.nop() end;
+
+	if passedintro and press and infobarshow then deleteinfobar();  theme.gfx.bg (bg_name) return std.nop() end;
+
+	if weareincontrol and key == 'escape' then walk( from() ) return end;
+	
+	if key == 'r' then setru(); rulangimage = "gfx/russian_selected.png"; enlangimage = "gfx/english.png"; ualangimage = "gfx/ukrainian.png"; walk( here() ) return end;
+	if key == 'e' then seten(); enlangimage = "gfx/english_selected.png"; rulangimage = "gfx/russian.png"; ualangimage = "gfx/ukrainian.png"; walk( here() ) return end;
+	if key == 'u' then setua(); ualangimage = "gfx/ukrainian_selected.png"; rulangimage = "gfx/russian.png"; enlangimage = "gfx/english.png"; walk( here() ) return end;
+	
+	if not passedintro and not key == 'o' and not key == 'k' and not key == 'i' and not key == 'r' and not key == 'e' and not key == 'u' and not key == 'escape' then return true else return false end;
 end;
+
