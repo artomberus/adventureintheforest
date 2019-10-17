@@ -350,6 +350,7 @@ global { -- Много разных переменных. В основном л
 	rulangimage = "gfx/russian.png";
 	enlangimage = "gfx/english.png";
 	ualangimage = "gfx/ukrainian.png";
+	passedintro = false; -- прошли ли интро
 }
 
 stat {
@@ -543,6 +544,7 @@ room {
 	pic = 'gfx/1.png';
 	enter = function()
 		snd.music 'mus/Atlantis.ogg' if firststart then snd.play('snd/breath.ogg', 1) end   bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+		passedintro = true;
 		end;
 	dsc = function (i)
 		if firststart then
@@ -4406,3 +4408,41 @@ room {
 		theme.reset 'win.h';
 		end;
 }
+
+--function keys:filter(press, key) -- код для того, чтобы узнавать коды клавиш
+--	return press
+--	end
+--
+--game.onkey = function(s, press, key)
+--	p("Нажата: ", key)
+--	return false
+--end;
+
+function keys:filter(press, key) -- код для того, чтобы узнавать коды клавиш
+	if key == 'up' or key == 'down' or key == 'left' or key == 'right' or key == 'return' or key == 'space' then return press
+	end
+end;
+game.onkey = function(s, press, key)
+	if not passedintro and key == 'up' and ualangimage ~= "gfx/ukrainian_selected.png" and rulangimage ~= "gfx/russian_selected.png" and enlangimage ~= "gfx/english_selected.png" then ualangimage = "gfx/ukrainian_selected.png"; ru = false; en = false; ua = true; clickmute = true; walk('main') return end; -- если не выбрали, и жмем вверх
+	if not passedintro and key == 'down' and rulangimage ~= "gfx/russian_selected.png" and enlangimage ~= "gfx/english_selected.png" and ualangimage ~= "gfx/ukrainian_selected.png" then rulangimage = "gfx/russian_selected.png"; ru = true; en = false; ua = false; clickmute = true; walk('main') return end; -- если не выбрали, и жмем вниз
+	if not passedintro and key == 'up' and rulangimage == "gfx/russian_selected.png" then rulangimage = "gfx/russian.png"; ualangimage = "gfx/ukrainian_selected.png"; ru = false; en = false; ua = true; clickmute = true; walk('main') return end;
+	if not passedintro and key == 'up' and enlangimage == "gfx/english_selected.png" then enlangimage = "gfx/english.png"; rulangimage = "gfx/russian_selected.png"; ru = true; en = false; ua = false; clickmute = true; walk('main') return end;
+	if not passedintro and key == 'up' and ualangimage == "gfx/ukrainian_selected.png" then ualangimage = "gfx/ukrainian.png"; enlangimage = "gfx/english_selected.png"; ru = false; en = true; ua = false; clickmute = true; walk('main') return end;
+	if not passedintro and key == 'down' and ualangimage == "gfx/ukrainian_selected.png" then ualangimage = "gfx/ukrainian.png"; rulangimage = "gfx/russian_selected.png"; ru = true; en = false; ua = false; clickmute = true; walk('main') return end;
+	if not passedintro and key == 'down' and enlangimage == "gfx/english_selected.png" then enlangimage = "gfx/english.png"; ualangimage = "gfx/ukrainian_selected.png"; ru = false; en = false; ua = true; clickmute = true; walk('main') return end;
+	if not passedintro and key == 'down' and rulangimage == "gfx/russian_selected.png" then rulangimage = "gfx/russian.png"; enlangimage = "gfx/english_selected.png"; ru = false; en = true; ua = false; clickmute = true; walk('main') return end;
+
+	if not passedintro and key == 'left' and ualangimage ~= "gfx/ukrainian_selected.png" and rulangimage ~= "gfx/russian_selected.png" and enlangimage ~= "gfx/english_selected.png" then ualangimage = "gfx/ukrainian_selected.png"; ru = false; en = false; ua = true; clickmute = true; walk('main') return end; -- если не выбрали, и жмем влево
+	if not passedintro and key == 'right' and rulangimage ~= "gfx/russian_selected.png" and enlangimage ~= "gfx/english_selected.png" and ualangimage ~= "gfx/ukrainian_selected.png" then rulangimage = "gfx/russian_selected.png"; ru = true; en = false; ua = false; clickmute = true; walk('main') return end; -- если не выбрали, и жмем вправо
+	if not passedintro and key == 'left' and rulangimage == "gfx/russian_selected.png" then rulangimage = "gfx/russian.png"; ualangimage = "gfx/ukrainian_selected.png"; ru = false; en = false; ua = true; clickmute = true; walk('main') return end;
+	if not passedintro and key == 'left' and ualangimage == "gfx/ukrainian_selected.png" then ualangimage = "gfx/ukrainian.png"; enlangimage = "gfx/english_selected.png"; ru = false; en = true; ua = false; clickmute = true; walk('main') return end;
+	if not passedintro and key == 'left' and enlangimage == "gfx/english_selected.png" then enlangimage = "gfx/english.png"; rulangimage = "gfx/russian_selected.png"; ru = true; en = false; ua = false; clickmute = true; walk('main') return end;
+	if not passedintro and key == 'right' and rulangimage == "gfx/russian_selected.png" then rulangimage = "gfx/russian.png"; enlangimage = "gfx/english_selected.png"; ru = false; en = true; ua = false; clickmute = true; walk('main') return end;
+	if not passedintro and key == 'right' and ualangimage == "gfx/ukrainian_selected.png" then ualangimage = "gfx/ukrainian.png"; rulangimage = "gfx/russian_selected.png"; ru = true; en = false; ua = false; clickmute = true; walk('main') return end;
+	if not passedintro and key == 'right' and enlangimage == "gfx/english_selected.png" then enlangimage = "gfx/english.png"; ualangimage = "gfx/ukrainian_selected.png"; ru = false; en = false; ua = true; clickmute = true; walk('main') return end;
+	
+	if not passedintro and key == 'return' then walk('start') return end;
+	if not passedintro and key == 'space' then walk('start') return end;
+--	p("Нажата: ", key)
+	if not passedintro then return true else return false end;
+end;
