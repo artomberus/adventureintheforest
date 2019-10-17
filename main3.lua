@@ -13,6 +13,7 @@ include "longway"
 require "snd"
 require "fmt"
 require "noinv"
+require "click"
 require "theme"
 require "keys"
 require "dbg"
@@ -40,11 +41,11 @@ function init ()
 	if LANG == 'uk' then ru = false; en = false; ua = true; end; 
 	end
 
-function game:ondecor(name)
+function game:ondecor(name, x, y)
 	clickmute = true;
 	if name == 'control_panel' then walkin('control_room'); end;
 	if name == 'info_panel' then walkin('info_room'); end;
-	if name == 'statsclick' and ru then p[[Да, это твой прогресс.]]; snd.play('snd/click.wav', 7); end;
+	if name == 'statsclick' and ru then p[[Да, это твой {@ walk stats|прогресс}.]]; snd.play('snd/click.wav', 7); end;
 	if name == 'statsclick' and en then p[[Yes, this is your progress.]]; snd.play('snd/click.wav', 7); end;
 	if name == 'statsclick' and ua then p[[Так, це твій прогрес.]]; snd.play('snd/click.wav', 7); end;
 		if name == 'cursor_usual' then theme.gfx.cursor ('gfx/inv/cursor.png', 'gfx/inv/cursoruse.png', 0 , 0); cursorstate = 0;
@@ -62,6 +63,10 @@ function game:ondecor(name)
 			if en then p ( fmt.c('^As you wish. Specified cursor size: very big.') ); end;
 			if ua then p ( fmt.c('^Як побажаєте. Заданий розмір курсору: дуже великий.') ); end;
 		end;
+	if ru and name == 'clickonscene' and clickonsceneenabled then p'Ты нажал на область сцены. Здесь просто картинка.' end;
+	if en and name == 'clickonscene' and clickonsceneenabled then p'You clicked on the scene area. Here is just a picture.' end;
+	if ua and name == 'clickonscene' and clickonsceneenabled then p'Ти натиснув на область сцени. Тут просто зображення.' end;
+	if name == 'traces' then x = rnd(600); y = rnd(500); walkin('control_room')  end;
 	end;
 
 exit = function()
@@ -71,7 +76,7 @@ exit = function()
 
 managesound = function()
 	if not clickmute and not weareincontrol then snd.play('snd/click.wav', 1) end;
-	clickmute = false; 
+	clickmute = false;
  	end;
 
 test = function() -- включаю её, когда надо отследить, где добавился опыт
@@ -97,6 +102,7 @@ function start(load) -- удобное изменение фона под игр
 	if cursorstate == 0 then theme.gfx.cursor ('gfx/inv/cursor.png', 'gfx/inv/cursoruse.png', 0 , 0) end;
 	if cursorstate == 1 then theme.gfx.cursor ('gfx/inv/cursorbig.png', 'gfx/inv/cursorbiguse.png', 0 , 0) end;
 	if cursorstate == 2 then theme.gfx.cursor ('gfx/inv/cursorverybig.png', 'gfx/inv/cursorverybiguse.png', 0 , 0) end;
+	
 end
 
 std.strip_call = false -- для переноса строк, где хочу и когда хочу :)
@@ -337,6 +343,7 @@ global { -- Много разных переменных. В основном л
 	fixed = false; -- исправил ли прогресс...
 	cursorstate = 1; -- состояние размера курсора. 0 - минимум, 1 - обычный, 2 - максимум
 	fromwhere = '';
+	clickonsceneenabled = false; -- включены ли клики на сцене
 }
 
 stat {
@@ -477,10 +484,13 @@ obj {
 		if countflush > 150 then countflush = 0 end;
 --		if mukaest then eveningenabled = true; end; -- проверял, работает ли. теперь по определенному триггеру можно включить вечер
 		if wasinvillage and countflush >= 15 then hungry = 0 countflush = 0 end;
+--		if bg_name == 'gfx/bg_talk.png' then clickonsceneenabled = false; end;
+--		if bg_name ~= 'gfx/bg_talk.png' then clickonsceneenabled = true; end;
 		return
 		end;
 	end;
 }
+
 
 room { -- Здесь начинается наше путешествие, небольшая предыстория
 	forcedsc = true;
@@ -495,10 +505,12 @@ room { -- Здесь начинается наше путешествие, не�
 	enter = function()
 		snd.music 'mus/Beginning.ogg' bg_name = 'gfx/bg_good.png' theme.gfx.bg (bg_name) 
 		deletebutton();
+--		deleteclickonscene();
 		end;
 	exit = function()
 		instead.fading = true; 
 		createbutton();
+		createclickonscene();
 		end;
 	dsc = function()
 		if ru then p [[ Ты уснул, как обычно, к полуночи. Сон был беспокойный, грезились инопланетяне, склонившиеся над головой, но как только просыпался в ужасе - видел всё ту же привычную комнату. Успокоившись, что мир за время твоего сна никуда не делся, ты снова засыпал. Так несколько раз... Но в конце-концов - страхи имеют свойство материализоваться. Уже сквозь сон ты услышал, что воздух стал чище, холоднее. Что-то не так. Ты резко открыл глаза...  
@@ -520,6 +532,7 @@ room {
 	pic = 'gfx/1.png';
 	enter = function()
 		snd.music 'mus/Atlantis.ogg' if firststart then snd.play('snd/breath.ogg', 1) end   bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+--		createclickonscene();
 		end;
 	dsc = function (i)
 		if firststart then
@@ -1060,15 +1073,23 @@ obj { -- дуб
 	nam = 'dub';
 	used = function (n, z)
 		if z^'topor' then
-		p [[И зачем?!]] return
+			if ru then p [[И зачем?!]] end
+			if en then p [[And why?!]] end
+			if ua then p [[І навіщо?!]] end
+			return
 		elseif z^'fonarik' then
-		p [[Надо подойти поближе.]];
+			if ru then p [[Надо подойти поближе.]] end
+			if en then p [[It is necessary to come closer.
+]] end
+			if ua then p [[Треба підійти ближче.]] end
 			return
 			end
 		return false;
 		end;
 	act = function (k)
-		p [[Огромное такое дерево, на пол дороги. Наверное, оно очень старое...]];
+		if ru then p [[Огромное такое дерево, на пол дороги. Наверное, оно очень старое...]]; end;
+		if en then p [[A huge tree on the half of the road. It’s probably very old...]]; end;
+		if ua then p [[Величезне таке дерево, на пів дороги. Напевно, воно дуже старе...]]; end;
 		return
 		end;
 }
@@ -1453,8 +1474,21 @@ obj {
 		end;
 	inv = function()
 		clickmute = true;
-		if isusercozel and not removetopor then p 'Орудие казни... Гены предыдущих поколений козликов отозвались в тебе глубинным, животным ужасом, при виде этого предмета.' waycounter = waycounter+1 snd.play('snd/sheep.ogg', 1) elseif not removetopor then p 'Неплохой топор, старинного образца. Откуда он здесь?' end
-		if removetopor then p'Ты выбросил топор. Хорошая вещь, но добраться до деревни важнее...' remove('topor') walk('longroad22') end;
+		if isusercozel and not removetopor then 
+			 waycounter = waycounter+1 snd.play('snd/sheep.ogg', 1)
+			if ru then p 'Орудие казни... Гены предыдущих поколений козликов отозвались в тебе глубинным, животным ужасом, при виде этого предмета.' end
+			if en then p 'The instrument of execution... The genes of previous generations of goats echoed in you with deep, animal horror at the sight of this object.' end
+			if ua then p 'Знаряддя страти... Гени попередніх поколінь козликів відгукнулися в тобі глибинним, тваринам жахом, при погляді на цей предмет.' end
+			elseif not removetopor then
+			if ru then p 'Неплохой топор, старинного образца. Откуда он здесь?' end
+			if en then p 'Nice axe, old-fashioned. Where is it from?' end
+			if ua then p 'Непогана сокира, стародавнього зразка. Звідки вона тут?' end
+		 	end
+		if removetopor then
+			if ru then p'Ты выбросил топор. Хорошая вещь, но добраться до деревни важнее...' end
+			if en then p'You threw the ax away. Good thing, but getting to the village is more important...' end
+			if ua then p'Ти викинув сокиру. Хороша річ, але дістатися до селища важливіше...' end
+			 remove('topor') walk('longroad22') end;
 		end;
 }
 
@@ -4157,11 +4191,13 @@ createbutton = function()
 	D {"control_panel", "img", "gfx/options_menu.png", x = 695, y = 569, click = true, z = -1}
 	D {"info_panel", "img", "gfx/info_menu.png", x = 635, y = 567, click = true, z = -1}
 	D {"statsclick", "img", "gfx/statsclick.png", x = 635, y = 32, click = true, z = -1}
+	createclickonscene();
 	end;
 deletebutton = function()
 	D { "control_panel" }
 	D { "info_panel" }
 	D { "statsclick" }
+	deleteclickonscene();
 	end;
 
 createcursors = function()
@@ -4175,6 +4211,22 @@ deletecursors = function()
 	D { "cursor_verybig" }
 	end;
 
+createclickonscene = function()
+	D {"clickonscene", "img", "gfx/clickonscene.png", x = 50, y = 35, click = true, z = -1}
+	clickonsceneenabled = true;
+	end;
+deleteclickonscene = function()
+	D { "clickonscene" }
+	clickonsceneenabled = false;
+	end;
+
+createtraces = function()
+	D {"traces", "img", "gfx/traces.png", x = rnd(600), y = rnd(500), click = true, z = -1}
+	end;
+deletetraces = function()
+	D { "traces" }
+	end;
+
 room {
 	nam = 'control_room';
 	pic = 'gfx/options.png';
@@ -4184,7 +4236,9 @@ room {
 		weareincontrol = true;
 		bg_name = 'gfx/bg_options.png' theme.gfx.bg (bg_name) 
 		deletebutton();
+		deleteclickonscene();
 		createcursors();
+		createtraces();
 		theme.win.geom (0, 10, 664, 600);
 		if ru then p ( fmt.c('Добро пожаловать в меню опций!^Вы можете сменить язык игры, а также размер курсора.') ); end;
 		if en then p ( fmt.c('Welcome to the options menu!^You can change the language of the game, as well as the size of the cursor.') ); end;
@@ -4206,7 +4260,9 @@ room {
 		weareincontrol = false;
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
 		createbutton(); 
+		createclickonscene();
 		deletecursors();
+		deletetraces();
 		theme.reset 'win.x';
 		theme.reset 'win.y';
 		theme.reset 'win.w';
@@ -4271,6 +4327,41 @@ room {
 	if ru then p ( fmt.c('^^Спасибо всем, кто помогал и помогает мне с инстедом и разработкой.^ Позднее я напишу здесь подробно. А теперь...') ); end;
 	if en then p ( fmt.c('^^Thanks to everyone who helped and helps me with INSTEAD and development. ^ Later I will write here in detail. And now...') ); end;
 	if ua then p ( fmt.c('^^Дякую всім, хто допомагав і допомагає мені з інстедом і розробкою. ^ Пізніше я напишу тут докладно. А зараз...') ); end;
+	if ru then p ( fmt.c('^^{@ walkout|К ИГРЕ!}') ); end;
+	if en then p ( fmt.c('^^{@ walkout|TO GAME!}') ); end;
+	if ua then p ( fmt.c('^^{@ walkout|ДО ГРИ!}') ); end;
+	end;
+	exit = function()
+		weareincontrol = false;
+		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
+		createbutton(); 
+		theme.reset 'win.x';
+		theme.reset 'win.y';
+		theme.reset 'win.w';
+		theme.reset 'win.h';
+		end;
+}
+
+room {
+	nam = 'stats';
+	disp = false;
+	noinv = true;
+	enter = function()
+		weareincontrol = true;
+		bg_name = 'gfx/bg_info.png' theme.gfx.bg (bg_name) 
+		deletebutton();
+		theme.win.geom (0, 10, 664, 600);
+		end;
+	decor = function()
+	p ( fmt.c('^'..fmt.img('gfx/icon.png')..'^') );
+	if ru then p ( fmt.c('^Итак. Что же ты успел сделать уже?^^') ); end;
+	if ru and touchedkey then p ( fmt.c('Посветил фонариком и нашел ключ.') ); end;
+	if ru and touchedtopor then p ( fmt.c('Нашел топор.') ); end;
+	if ru and openedwithkey then p ( fmt.c('Открыл дверь ключом.') ); end;
+	if ru and brokenwithtopor then p ( fmt.c('Сломал дверь топором.') ); end;
+	if ru and havelopata then p ( fmt.c('^Взял лопату в хижине.') ); end;
+	if ru and haveudochka then p ( fmt.c('Взял удочку в хижине.') ); end;
+	if ru and havevedro then p ( fmt.c('Взял ведро в хижине.') ); end;
 	if ru then p ( fmt.c('^^{@ walkout|К ИГРЕ!}') ); end;
 	if en then p ( fmt.c('^^{@ walkout|TO GAME!}') ); end;
 	if ua then p ( fmt.c('^^{@ walkout|ДО ГРИ!}') ); end;
