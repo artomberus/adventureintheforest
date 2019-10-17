@@ -106,6 +106,11 @@ function set_bg(name)
     theme.gfx.bg (name)
 end
 
+--function set_fontsize(size)
+--    font_size = size
+--    theme.win.font (size)
+--end
+
 function start(load) -- удобное изменение фона под игровую ситуацию
      theme.gfx.bg (bg_name)
 	if cursorstate == 0 then theme.gfx.cursor ('gfx/inv/cursor.png', 'gfx/inv/cursoruse.png', 0 , 0) end;
@@ -358,6 +363,7 @@ global { -- Много разных переменных. В основном л
 	ualangimage = "gfx/ukrainian.png";
 	passedintro = false; -- прошли ли интро
 	infobarshow = false; -- показан ли инфобар о клавишах
+	fontsize = theme.get'win.fnt.size'; -- размер шрифта, соответствует дефолтному. при его увеличении увеличиваем шрифт в игре, и поправляем зоны видимости, раз уж взялись свою тему делать
 }
 
 stat {
@@ -4299,6 +4305,13 @@ room {
 	if ru then p ( fmt.c('^^{enableeveningmode|Включить вечер}.') ); end;
 	if en then p ( fmt.c('^^{enableeveningmode|Enable evening}.') ); end;
 	if ua then p ( fmt.c('^^{enableeveningmode|Увімкнути вечір}.') ); end;
+	if ru then if theme.get'win.fnt.size' ~= '25' then p ( fmt.c('^^{fontsizeplus|Увеличить размер шрифта}.') ); end; end;
+	if en then if theme.get'win.fnt.size' ~= '25' then p ( fmt.c('^^{fontsizeplus|Increase font size}.') ); end; end;
+	if ua then if theme.get'win.fnt.size' ~= '25' then p ( fmt.c('^^{fontsizeplus|Збільшити розмір шрифту.}.') ); end; end;
+	if ru then if theme.get'win.fnt.size' ~= '10' then p ( fmt.c('{fontsizeminus|Уменьшить размер шрифта}.') ); end; end;
+	if en then if theme.get'win.fnt.size' ~= '10' then p ( fmt.c('{fontsizeminus|Reduce font size}.') ); end; end;
+	if ua then if theme.get'win.fnt.size' ~= '10' then p ( fmt.c('{fontsizeminus|Зменшити розмір шрифту}.') ); end; end;
+	p ( fmt.c('^^Текущий размер шрифта:'..fontsize) );
 	if ru then p ( fmt.c('^^{@ walkout|К ИГРЕ!}') ); end;
 	if en then p ( fmt.c('^^{@ walkout|TO GAME!}') ); end;
 	if ua then p ( fmt.c('^^{@ walkout|ДО ГРИ!}') ); end;
@@ -4315,7 +4328,7 @@ room {
 		theme.reset 'win.w';
 		theme.reset 'win.h';
 		end;
-	obj = {'russian', 'english', 'ukrainian', 'enableeveningmode'};
+	obj = {'russian', 'english', 'ukrainian', 'enableeveningmode', 'fontsizeplus', 'fontsizeminus'};
 }
 
 obj {
@@ -4340,6 +4353,37 @@ obj {
 	p ( fmt.c('^Теперь наступит вечер. Но если только вы в деревне.') );
 	end;
 }
+
+obj {
+	nam = 'fontsizeplus';
+	act = function()
+	if theme.get'win.fnt.size' < '25' then fontsize = theme.get'win.fnt.size'+1; end;
+	theme.win.font ("fnt/{sans,sans-b,sans-i,sans-bi}.ttf", fontsize, 1);
+	if ru then if theme.get'win.fnt.size' <= '24' then p ( fmt.c('^Размер шрифта увеличен.') ); end; end;
+	if en then if theme.get'win.fnt.size' <= '24' then p ( fmt.c('^Font size increased.') ); end; end;
+	if ua then if theme.get'win.fnt.size' <= '24' then p ( fmt.c('^Розмір шрифту збільшений.') ); end; end;
+	if ru then if theme.get'win.fnt.size' == '25' then p ( fmt.c('^Куда уж больше?..') ); end; end;
+	if en then if theme.get'win.fnt.size' == '25' then p ( fmt.c('^Much more?..') ); end; end;
+	if ua then if theme.get'win.fnt.size' == '25' then p ( fmt.c('^Куди вже більше?..') ); end; end;
+	fontsize = theme.get'win.fnt.size';
+	end;
+}
+
+obj {
+	nam = 'fontsizeminus';
+	act = function()
+	if theme.get'win.fnt.size' > '10' then fontsize = theme.get'win.fnt.size'-1; end;
+	theme.win.font ("fnt/{sans,sans-b,sans-i,sans-bi}.ttf", fontsize, 1);
+	if ru then if theme.get'win.fnt.size' >= '11' then p ( fmt.c('^Размер шрифта уменьшен.') ); end; end;
+	if en then if theme.get'win.fnt.size' >= '11' then p ( fmt.c('^Font size reduced.') ); end; end;
+	if ua then if theme.get'win.fnt.size' >= '11' then p ( fmt.c('^Розмір шрифту зменшений.') ); end; end;
+	if ru then if theme.get'win.fnt.size' == '10' then p ( fmt.c('^Куда уж меньше?..') ); end; end;
+	if en then if theme.get'win.fnt.size' == '10' then p ( fmt.c('^Far less?..') ); end; end;
+	if ua then if theme.get'win.fnt.size' == '10' then p ( fmt.c('^Куди вже менше?..') ); end; end;
+	fontsize = theme.get'win.fnt.size';
+	end;
+}
+
 
 room {
 	nam = 'info_room';
