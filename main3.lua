@@ -4307,11 +4307,13 @@ room {
 	if ua then p ( fmt.c('^^{enableeveningmode|Увімкнути вечір}.') ); end;
 	if ru then if theme.get'win.fnt.size' ~= '25' then p ( fmt.c('^^{fontsizeplus|Увеличить размер шрифта}.') ); end; end;
 	if en then if theme.get'win.fnt.size' ~= '25' then p ( fmt.c('^^{fontsizeplus|Increase font size}.') ); end; end;
-	if ua then if theme.get'win.fnt.size' ~= '25' then p ( fmt.c('^^{fontsizeplus|Збільшити розмір шрифту.}.') ); end; end;
+	if ua then if theme.get'win.fnt.size' ~= '25' then p ( fmt.c('^^{fontsizeplus|Збільшити розмір шрифту}.') ); end; end;
 	if ru then if theme.get'win.fnt.size' ~= '10' then p ( fmt.c('{fontsizeminus|Уменьшить размер шрифта}.') ); end; end;
 	if en then if theme.get'win.fnt.size' ~= '10' then p ( fmt.c('{fontsizeminus|Reduce font size}.') ); end; end;
 	if ua then if theme.get'win.fnt.size' ~= '10' then p ( fmt.c('{fontsizeminus|Зменшити розмір шрифту}.') ); end; end;
-	p ( fmt.c('^^Текущий размер шрифта:'..fontsize) );
+	if ru then p ( fmt.c('^^Текущий размер шрифта: '..fontsize) ); end;
+	if en then p ( fmt.c('^^Current font size: '..fontsize) ); end;
+	if ua then p ( fmt.c('^^Поточний розмір шрифта: '..fontsize) ); end;
 	if ru then p ( fmt.c('^^{@ walkout|К ИГРЕ!}') ); end;
 	if en then p ( fmt.c('^^{@ walkout|TO GAME!}') ); end;
 	if ua then p ( fmt.c('^^{@ walkout|ДО ГРИ!}') ); end;
