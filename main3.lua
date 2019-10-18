@@ -64,14 +64,14 @@ function game:ondecor(name, x, y)
 			if en then p ( fmt.c('^As you wish. Specified cursor size: very big.') ); end;
 			if ua then p ( fmt.c('^Як побажаєте. Заданий розмір курсору: дуже великий.') ); end;
 		end;
-	if ru and name == 'clickonscene' and clickonsceneenabled then p'Ты нажал на область сцены. Здесь просто картинка.' end;
-	if en and name == 'clickonscene' and clickonsceneenabled then p'You clicked on the scene area. Here is just a picture.' end;
-	if ua and name == 'clickonscene' and clickonsceneenabled then p'Ти натиснув на область сцени. Тут просто зображення.' end;
-	if name == 'traces' then x = rnd(600); y = rnd(500); walkin('control_room')  end;
-	if name == 'ruslang' then setru(); rulangimage = "gfx/russian_selected.png"; enlangimage = "gfx/english.png"; ualangimage = "gfx/ukrainian.png";  walk('main')  end;
-	if name == 'englang' then seten(); enlangimage = "gfx/english_selected.png"; rulangimage = "gfx/russian.png"; ualangimage = "gfx/ukrainian.png"; walk('main')  end;
-	if name == 'ukrlang' then setua(); ualangimage = "gfx/ukrainian_selected.png"; enlangimage = "gfx/english.png"; rulangimage = "gfx/russian.png"; walk('main')  end;
-	if name == 'keys_infobar' and infobarshow then deleteinfobar(); theme.gfx.bg (bg_name) return std.nop() end; 
+	if ru and name == 'clickonscene' and clickonsceneenabled then p'Ты нажал на область сцены. Здесь просто картинка.' snd.play('snd/click.wav', 7); end;
+	if en and name == 'clickonscene' and clickonsceneenabled then p'You clicked on the scene area. Here is just a picture.' snd.play('snd/click.wav', 7); end;
+	if ua and name == 'clickonscene' and clickonsceneenabled then p'Ти натиснув на область сцени. Тут просто зображення.' snd.play('snd/click.wav', 7); end;
+	if name == 'traces' then x = rnd(600); y = rnd(500); snd.play('snd/click.wav', 7); walkin('control_room')  end;
+	if name == 'ruslang' then setru(); rulangimage = "gfx/russian_selected.png"; enlangimage = "gfx/english.png"; ualangimage = "gfx/ukrainian.png"; snd.play('snd/click.wav', 7); walk('main')  end;
+	if name == 'englang' then seten(); enlangimage = "gfx/english_selected.png"; rulangimage = "gfx/russian.png"; ualangimage = "gfx/ukrainian.png"; snd.play('snd/click.wav', 7); walk('main')  end;
+	if name == 'ukrlang' then setua(); ualangimage = "gfx/ukrainian_selected.png"; enlangimage = "gfx/english.png"; rulangimage = "gfx/russian.png"; snd.play('snd/click.wav', 7); walk('main')  end;
+	if name == 'keys_infobar' and infobarshow then deleteinfobar(); theme.gfx.bg (bg_name) fadingcanbe = true; repeatplease = true; return okay(); end; 
 	end;
 
 exit = function()
@@ -82,6 +82,7 @@ exit = function()
 managesound = function()
 	if not clickmute and not weareincontrol then snd.play('snd/click.wav', 1) end;
 	clickmute = false;
+	if fadingcanbe then repeatplease = false; end;
  	end;
 
 setru = function() ru = true; en = false; ua = false; end;
@@ -105,11 +106,6 @@ function set_bg(name)
     bg_name = name
     theme.gfx.bg (name)
 end
-
---function set_fontsize(size)
---    font_size = size
---    theme.win.font (size)
---end
 
 function start(load) -- удобное изменение фона под игровую ситуацию
      theme.gfx.bg (bg_name)
@@ -364,6 +360,9 @@ global { -- Много разных переменных. В основном л
 	passedintro = false; -- прошли ли интро
 	infobarshow = false; -- показан ли инфобар о клавишах
 	fontsize = theme.get'win.fnt.size'; -- размер шрифта, соответствует дефолтному. при его увеличении увеличиваем шрифт в игре, и поправляем зоны видимости, раз уж взялись свою тему делать
+	fadingcanbe = false; -- разрешен ли фейдинг
+	repeatplease = false; -- надо ли повторить сообщение на перекрестке при заходе. нужно чтобы визуально ничего не менялось, когда кликаем мышей по инфобару
+	langchanged = false; -- если язык не изменился, незачем перерисовывать сцену
 }
 
 stat {
@@ -493,6 +492,7 @@ global { -- Сообщения на перекрестке.
 function inc(a) return a + 1 end; -- на всякий случай, может пригодятся
 function dec(a) return a - 1 end;
 
+
 obj {
 	nam = 'maintain'; -- делаем игрока голодным, если долго ходил, и управление вечером
 	disp = false;
@@ -504,8 +504,8 @@ obj {
 		if countflush > 150 then countflush = 0 end;
 --		if mukaest then eveningenabled = true; end; -- проверял, работает ли. теперь по определенному триггеру можно включить вечер
 		if wasinvillage and countflush >= 15 then hungry = 0 countflush = 0 end;
---		if bg_name == 'gfx/bg_talk.png' then clickonsceneenabled = false; end;
---		if bg_name ~= 'gfx/bg_talk.png' then clickonsceneenabled = true; end;
+		if fadingcanbe then instead.fading = true; end; -- включаем фейдинг после показа инфобара. по правде, я смутно понимаю, как всё работает, но вроде глюков нет. этот код нужен, чтобы при показе и убирании инфобара фейдинга не было, потому, что такое поведение у главного меню, а мы косим под встроенные менюшки.
+		if clickonsceneenabled == false and not firststart and not weareincontrol then createclickonscene(); theme.gfx.bg (bg_name) end;
 		return
 		end;
 	end;
@@ -568,9 +568,9 @@ room {
 			return
 			end
 		if otherstarts then
-			if ru then counter = (counter +1)%#inplaceofrespawnRU end
-			if en then counter = (counter +1)%#inplaceofrespawnEN end
-			if ua then counter = (counter +1)%#inplaceofrespawnUA end
+			if ru then if not repeatplease then counter = (counter +1)%#inplaceofrespawnRU repeatplease = false; end end
+			if en then if not repeatplease then counter = (counter +1)%#inplaceofrespawnEN repeatplease = false; end end
+			if ua then if not repeatplease then counter = (counter +1)%#inplaceofrespawnUA repeatplease = false; end end
 			if ru then return p(inplaceofrespawnRU[counter]) end -- пишем всякие сообщения при заходе на развилку
 			if en then return p(inplaceofrespawnEN[counter]) end
 			if ua then return p(inplaceofrespawnUA[counter]) end
@@ -1116,8 +1116,7 @@ obj { -- дуб
 			return
 		elseif z^'fonarik' then
 			if ru then p [[Надо подойти поближе.]] end
-			if en then p [[It is necessary to come closer.
-]] end
+			if en then p [[It is necessary to come closer.]] end
 			if ua then p [[Треба підійти ближче.]] end
 			return
 			end
@@ -4409,7 +4408,7 @@ room {
 		weareincontrol = true;
 		bg_name = 'gfx/bg_info.png' theme.gfx.bg (bg_name) 
 		deletebutton();
-		theme.win.geom (0, 10, 664, 600);
+		theme.win.geom (0, 10, 644, 580);
 		end;
 	decor = function()
 	p ( fmt.c('^'..fmt.img('gfx/icon.png')..'^') );
@@ -4484,15 +4483,6 @@ room {
 		end;
 }
 
---function keys:filter(press, key) -- код для того, чтобы узнавать коды клавиш
---	return press
---	end
---
---game.onkey = function(s, press, key)
---	p("Нажата: ", key)
---	return false
---end;
-
 function keys:filter(press, key) -- код для того, чтобы узнавать коды клавиш
 	return press
 --	if key == 'up' or key == 'down' or key == 'left' or key == 'right' or key == 'return' or key == 'space' or key == 'o' or --key == 'k' or key == 'i' then return press
@@ -4522,17 +4512,48 @@ game.onkey = function(s, press, key)
 --	p("Нажата: ", key);
 	if passedintro and key == 'i' and not infobarshow and not weareincontrol then walkin('info_room'); return end;
 	if passedintro and key == 'o' and not infobarshow and not weareincontrol then walkin('control_room'); return end;
-	if passedintro and key == 'k' and not infobarshow then createinfobar(); theme.gfx.bg (bg_name) return std.nop() end;
-	if passedintro and key == 'k' and infobarshow then deleteinfobar();  theme.gfx.bg (bg_name) return std.nop() end;
+	if passedintro and key == 'k' and not infobarshow then instead.fading = false; deleteclickonscene(); fadingcanbe = false; createinfobar(); theme.gfx.bg (bg_name) return okay(); end;  
+	if passedintro and key == 'k' and infobarshow then deleteinfobar(); theme.gfx.bg (bg_name) createclickonscene(); fadingcanbe = true; repeatplease = true; return std.nop() end; 
 
-	if passedintro and press and infobarshow then deleteinfobar();  theme.gfx.bg (bg_name) return std.nop() end;
+	if passedintro and press and infobarshow then deleteinfobar(); theme.gfx.bg (bg_name) createclickonscene(); fadingcanbe = true; repeatplease = true; return std.nop() end;
 
 	if weareincontrol and key == 'escape' then walk( from() ) return end;
 	
-	if key == 'r' then setru(); rulangimage = "gfx/russian_selected.png"; enlangimage = "gfx/english.png"; ualangimage = "gfx/ukrainian.png"; walk( here() ) return end;
-	if key == 'e' then seten(); enlangimage = "gfx/english_selected.png"; rulangimage = "gfx/russian.png"; ualangimage = "gfx/ukrainian.png"; walk( here() ) return end;
-	if key == 'u' then setua(); ualangimage = "gfx/ukrainian_selected.png"; rulangimage = "gfx/russian.png"; enlangimage = "gfx/english.png"; walk( here() ) return end;
-	
+	if key == 'r' then
+		if ru == false then langchanged = true else langchanged = false end;
+		setru();
+		rulangimage = "gfx/russian_selected.png";
+		enlangimage = "gfx/english.png";
+		ualangimage = "gfx/ukrainian.png";
+		if here() ~= 'main' then
+					if langchanged then walk( here() ) 
+--	else p(inplaceofrespawnRU[counter]) 
+					end;
+		end;
+		if firststart then walk(here()) end;
+		return end;
+	if key == 'e' then
+		if en == false then langchanged = true else langchanged = false end;
+		seten();
+		enlangimage = "gfx/english_selected.png";
+		rulangimage = "gfx/russian.png";
+		ualangimage = "gfx/ukrainian.png";
+		if here() ~= 'main' then if langchanged then walk( here() )  end; end;
+		if firststart then walk(here()) end;
+		return end;
+	if key == 'u' then 
+		if ua == false then langchanged = true else langchanged = false end;
+		setua();
+		ualangimage = "gfx/ukrainian_selected.png";
+		rulangimage = "gfx/russian.png";
+		enlangimage = "gfx/english.png";
+		if here() ~= 'main' then if langchanged then walk( here() )  end; end;
+		if firststart then walk(here()) end;
+		return end;
 	if not passedintro and not key == 'o' and not key == 'k' and not key == 'i' and not key == 'r' and not key == 'e' and not key == 'u' and not key == 'escape' then return true else return false end;
 end;
 
+okay = function()
+	std.nop();
+	walk ( here() );
+	end;
