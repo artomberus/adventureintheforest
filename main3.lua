@@ -630,7 +630,11 @@ room {
 }
 room {
 	nam = 'leftway';	
-	title = "Хижина";
+	title = function()
+		if ru then return 'Хижина'; end;
+		if en then return 'Humpy'; end;
+		if ua then return 'Хатина'; end;
+		end;
 	pic = function(s)
 		if holeway and brokenwithtopor and haveudochka then return 'gfx/3_2brokenwithout.png'
 		elseif holeway and brokenwithtopor and not haveudochka then return 'gfx/3_2broken.png'
@@ -643,10 +647,18 @@ room {
 		snd.music 'mus/Atlantis.ogg' if holeway then enable '#hole' end;
 		end;
 	decor = function(l) 
-		p [[Ты видишь старую хижину, которую построили, наверное, еще до революции. Она перекосилась, и только густой лес своими могучими ветвями не позволяет ей развалиться.]];
-		if not brokenwithtopor then p [[Но {door|дверь} цела и петли на месте.  Кузнец знал свое дело.]] end;
-		if brokenwithtopor then p [[На месте двери зияет проход внутрь.]] end;
-		if seen('holeopened','leftway') then p [[^Слева от хижины, между деревьев, ты видишь проход! Деревья словно расступились и теперь между ними есть проём, в который ты можешь пройти.]] end
+		if ru then p [[Ты видишь старую хижину, которую построили, наверное, еще до революции. Она перекосилась, и только густой лес своими могучими ветвями не позволяет ей развалиться.]]; end;
+		if en then p [[You see the old hut, which was probably built a very long time ago. It warped, and only a dense forest with it's mighty branches does not allow hut to fall apart.]]; end;
+		if ua then p [[Ти бачиш стару хатину, яку побудували, мабуть, ще до революції. Вона перекосилась, і тільки густий ліс своїми могутніми гілками не дозволяє їй розвалитися.]]; end;
+		if ru then if not brokenwithtopor then p [[Но {door|дверь} цела и петли на месте. Кузнец знал своё дело.]] end; end;
+		if en then if not brokenwithtopor then p [[But the {door|door} is not broken and it's hinges are in place. The blacksmith knew his job.]] end; end;
+		if ua then if not brokenwithtopor then p [[Але {door|двері} цілі й петлі на місці. Коваль знав свою справу.]] end; end;
+		if ru then if brokenwithtopor then p [[На месте двери зияет проход внутрь.]] end; end;
+		if en then if brokenwithtopor then p [[In place of the door there is a gap inward.]] end; end;
+		if ua then if brokenwithtopor then p [[На місці двері зяє прохід всередину.]] end; end;
+		if ru then if seen('holeopened','leftway') then p [[^Слева от хижины, между деревьев, ты видишь проход! Деревья словно расступились и теперь между ними есть проём, в который ты можешь пройти.]] end end;
+		if en then if seen('holeopened','leftway') then p [[^To the left of the hut, between the trees, you see the passage! The trees seemed to have parted and now there is an opening between them that you can pass into.]] end end;
+		if ua then if seen('holeopened','leftway') then p [[^Зліва від хатини, між дерев, ти бачиш прохід! Дерева ніби розступилися і тепер між ними є простір, в який ти можеш пройти.]] end end;
 		end;
 	way = {path {'Развилка', 'start'}, path {'#hole','В проем','trees'}:disable() , path {'#door','В дом','inhouse'}:disable() };
 }:with {
