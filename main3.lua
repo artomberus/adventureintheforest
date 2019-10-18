@@ -15,6 +15,7 @@ require "fmt"
 require "noinv"
 require "click"
 require "theme"
+require "timer"
 require "keys"
 require "dbg"
 require "sprite"
@@ -363,6 +364,8 @@ global { -- Много разных переменных. В основном л
 	fadingcanbe = false; -- разрешен ли фейдинг
 	repeatplease = false; -- надо ли повторить сообщение на перекрестке при заходе. нужно чтобы визуально ничего не менялось, когда кликаем мышей по инфобару
 	langchanged = false; -- если язык не изменился, незачем перерисовывать сцену
+	redbarshow = false; -- показан ли красный экран
+	death_time = 1000; -- время показа красного экрана для таймера
 }
 
 stat {
@@ -798,7 +801,15 @@ room {
 	enter = function(s)
 		bg_name = 'gfx/bg_death.png' theme.gfx.bg (bg_name) fallen = true;
 		deletebutton();
+			timer:set(death_time);
+			createredbar();
 		end;
+	timer = function(s)
+		timer:stop();
+		deleteredbar();
+		theme.gfx.bg (bg_name)
+		end;
+
 	exit = function()
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
 		createbutton();
@@ -1578,6 +1589,13 @@ room {
 	enter = function(s)
 		bg_name = 'gfx/bg_death.png' theme.gfx.bg (bg_name)
 		deletebutton();
+			timer:set(death_time);
+			createredbar();
+		end;
+	timer = function(s)
+		timer:stop();
+		deleteredbar();
+		theme.gfx.bg (bg_name)
 		end;
 	exit = function()
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
@@ -4293,6 +4311,15 @@ deleteinfobar = function()
 	infobarshow = false;
 	end;
 
+createredbar = function()
+	D {"redbar", "img", "gfx/red.png", x = 0, y = 0, click = true, z = -1} 
+	redbarshow = true;
+	end;
+deleteredbar = function()
+	D { "redbar" }
+	redbarshow = false;
+	end;
+
 room {
 	nam = 'control_room';
 	pic = 'gfx/options.png';
@@ -4314,7 +4341,7 @@ room {
 	if ru then p ( fmt.c('Выберите язык игры:^') ); end;
 	if en then p ( fmt.c('Choose game language:^') ); end;
 	if ua then p ( fmt.c('Виберіть мову гри:^') ); end;
-	p ( fmt.c('{russian|Русский}, {english|English}, {ukrainian|Українська}') );
+	p ( fmt.c(' {russian|Русский}, {english|English}, {ukrainian|Українська}') );
 	if ru then p ( fmt.c('^^{enableeveningmode|Включить вечер}.') ); end;
 	if en then p ( fmt.c('^^{enableeveningmode|Enable evening}.') ); end;
 	if ua then p ( fmt.c('^^{enableeveningmode|Увімкнути вечір}.') ); end;
