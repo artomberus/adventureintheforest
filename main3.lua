@@ -4272,7 +4272,9 @@ deleteukrlang = function()
 	end;
 
 createinfobar = function()
-	D {"keys_infobar", "img", "gfx/keys_infobar.png", x = 0, y = 0, click = true, z = -1}
+	if ru then D {"keys_infobar", "img", "gfx/keys_infobar.png", x = 0, y = 0, click = true, z = -1} end;
+	if en then D {"keys_infobar", "img", "gfx/keys_infobar_en.png", x = 0, y = 0, click = true, z = -1} end;
+	if ua then D {"keys_infobar", "img", "gfx/keys_infobar_ua.png", x = 0, y = 0, click = true, z = -1} end;
 	infobarshow = true;
 	end;
 deleteinfobar = function()
