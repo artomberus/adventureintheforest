@@ -52,7 +52,7 @@ function game:ondecor(name, x, y)
 	if name == 'englang' then seten(); enlangimage = "gfx/english_selected.png"; rulangimage = "gfx/russian.png"; ualangimage = "gfx/ukrainian.png"; snd.play('snd/click.wav', 7); walk('main') return  end;
 	if name == 'ukrlang' then setua(); ualangimage = "gfx/ukrainian_selected.png"; enlangimage = "gfx/english.png"; rulangimage = "gfx/russian.png"; snd.play('snd/click.wav', 7); walk('main') return  end;
 	if name == 'statsclick' and infobarshow then deleteinfobar(); theme.gfx.bg (bg_name) return std.nop() end; 
-	if name == 'statsclick' and ru and not infobarshow then p[[Да, это твой {@ walk stats|прогресс}.]]; if not snd.playing(7) then snd.play('snd/clicklong.wav', 7) end return end;
+	if name == 'statsclick' and ru and not infobarshow then p[[Да, это твой {@ walk stats|прогресс}.]]; if not snd.playing(7) then snd.play('snd/clicklong.wav', 7) end clickmute = false; return end;
 	if name == 'statsclick' and en and not infobarshow then p[[Yes, this is your progress.]]; if not snd.playing(7) then snd.play('snd/clicklong.wav', 7) end return end;
 	if name == 'statsclick' and ua and not infobarshow then p[[Так, це твій прогрес.]]; if not snd.playing(7) then snd.play('snd/clicklong.wav', 7) end return end;
 	if name == 'traces' then x = rnd(600); y = rnd(500); snd.play('snd/click.wav', 7); walkin('control_room') return  end;
@@ -78,7 +78,7 @@ function game:ondecor(name, x, y)
 	 	if ru then p'Ты нажал на область сцены. Здесь просто картинка.' end
 		if en then p'You clicked on the scene area. Here is just a picture.' end
 		if ua then p'Ти натиснув на область сцени. Тут просто зображення.' end
-	 sndplaylong() else drawtext = true; return std.nop() 
+	 sndplaylong() clickmute = false; else drawtext = true; return std.nop() 
 	end;
 
 	end;
@@ -4571,7 +4571,12 @@ game.onkey = function(s, press, key)
 		enlangimage = "gfx/english.png";
 		ualangimage = "gfx/ukrainian.png";
 		if here() ~= 'main' then
-					if langchanged then walk( here() ) 
+					if langchanged then walk( here() ) else
+						if seen('dub', here() ) then
+									if ru then return p(inplaceofrespawnRU[counter]) end 
+									if en then return p(inplaceofrespawnEN[counter]) end
+									if ua then return p(inplaceofrespawnUA[counter]) end 
+						 end;
 					end;
 		end;
 		if firststart then walk(here()) end;
@@ -4582,7 +4587,14 @@ game.onkey = function(s, press, key)
 		enlangimage = "gfx/english_selected.png";
 		rulangimage = "gfx/russian.png";
 		ualangimage = "gfx/ukrainian.png";
-		if here() ~= 'main' then if langchanged then walk( here() )  end; end;
+		if here() ~= 'main' then if langchanged then walk( here() ) else
+						if seen('dub', here() ) then
+									if ru then return p(inplaceofrespawnRU[counter]) end 
+									if en then return p(inplaceofrespawnEN[counter]) end
+									if ua then return p(inplaceofrespawnUA[counter]) end 
+						 end;
+		 			end;
+		end;
 		if firststart then walk(here()) end;
 		return end;
 	if key == 'u' then 
@@ -4591,7 +4603,14 @@ game.onkey = function(s, press, key)
 		ualangimage = "gfx/ukrainian_selected.png";
 		rulangimage = "gfx/russian.png";
 		enlangimage = "gfx/english.png";
-		if here() ~= 'main' then if langchanged then walk( here() )  end; end;
+		if here() ~= 'main' then if langchanged then walk( here() ) else
+						if seen('dub', here() ) then
+									if ru then return p(inplaceofrespawnRU[counter]) end 
+									if en then return p(inplaceofrespawnEN[counter]) end
+									if ua then return p(inplaceofrespawnUA[counter]) end 
+						 end;
+					end;
+		end;
 		if firststart then walk(here()) end;
 		return end;
 --	p("Нажата: ", key);
