@@ -42,37 +42,45 @@ function init ()
 	if LANG == 'uk' then setua(); end; 
 	end
 
+function sndplaylong()
+	if not snd.playing(7) then snd.play('snd/clicklong.wav', 7) end;
+end;
+
 function game:ondecor(name, x, y)
 	clickmute = true;
-	if name == 'control_panel' then walkin('control_room'); end;
-	if name == 'info_panel' then walkin('info_room'); end;
+	if name == 'ruslang' then setru(); rulangimage = "gfx/russian_selected.png"; enlangimage = "gfx/english.png"; ualangimage = "gfx/ukrainian.png"; snd.play('snd/click.wav', 7); walk('main') return  end;
+	if name == 'englang' then seten(); enlangimage = "gfx/english_selected.png"; rulangimage = "gfx/russian.png"; ualangimage = "gfx/ukrainian.png"; snd.play('snd/click.wav', 7); walk('main') return  end;
+	if name == 'ukrlang' then setua(); ualangimage = "gfx/ukrainian_selected.png"; enlangimage = "gfx/english.png"; rulangimage = "gfx/russian.png"; snd.play('snd/click.wav', 7); walk('main') return  end;
 	if name == 'statsclick' and infobarshow then deleteinfobar(); theme.gfx.bg (bg_name) return std.nop() end; 
-	if name == 'statsclick' and ru and not infobarshow then p[[Да, это твой {@ walk stats|прогресс}.]]; snd.play('snd/click.wav', 7); end;
-	if name == 'statsclick' and en and not infobarshow then p[[Yes, this is your progress.]]; snd.play('snd/click.wav', 7); end;
-	if name == 'statsclick' and ua and not infobarshow then p[[Так, це твій прогрес.]]; snd.play('snd/click.wav', 7); end;
+	if name == 'statsclick' and ru and not infobarshow then p[[Да, это твой {@ walk stats|прогресс}.]]; if not snd.playing(7) then snd.play('snd/clicklong.wav', 7) end return end;
+	if name == 'statsclick' and en and not infobarshow then p[[Yes, this is your progress.]]; if not snd.playing(7) then snd.play('snd/clicklong.wav', 7) end return end;
+	if name == 'statsclick' and ua and not infobarshow then p[[Так, це твій прогрес.]]; if not snd.playing(7) then snd.play('snd/clicklong.wav', 7) end return end;
+	if name == 'traces' then x = rnd(600); y = rnd(500); snd.play('snd/click.wav', 7); walkin('control_room') return  end;
+	if name == 'control_panel' and passedintro then walkin('control_room'); return end;
+	if name == 'info_panel' and passedintro then walkin('info_room');  return end;
 		if name == 'cursor_usual' then theme.gfx.cursor ('gfx/inv/cursor.png', 'gfx/inv/cursoruse.png', 0 , 0); cursorstate = 0;
 			if ru then p ( fmt.c('^Как пожелаете. Задан размер курсора: обычный.') ); end;
 			if en then p ( fmt.c('^As you wish. Specified cursor size: normal.') ); end;
 			if ua then p ( fmt.c('^Як побажаєте. Заданий розмір курсору: звичайний.') ); end;
-	 	end;
+	 	return end;
 		if name == 'cursor_big' then theme.gfx.cursor ('gfx/inv/cursorbig.png', 'gfx/inv/cursorbiguse.png', 0 , 0); cursorstate = 1;
 			if ru then p ( fmt.c('^Как пожелаете. Задан размер курсора: большой.') ); end;
 			if en then p ( fmt.c('^As you wish. Specified cursor size: big.') ); end;
 			if ua then p ( fmt.c('^Як побажаєте. Заданий розмір курсору: великий.') ); end;
-		end;
+		return end;
 		if name == 'cursor_verybig' then theme.gfx.cursor ('gfx/inv/cursorverybig.png', 'gfx/inv/cursorverybiguse.png', 0 , 0); cursorstate = 2;
 			if ru then p ( fmt.c('^Как пожелаете. Задан размер курсора: огромный.') ); end;
 			if en then p ( fmt.c('^As you wish. Specified cursor size: very big.') ); end;
 			if ua then p ( fmt.c('^Як побажаєте. Заданий розмір курсору: дуже великий.') ); end;
-		end;
-	if ru and name == 'clickonscene' and clickonsceneenabled then p'Ты нажал на область сцены. Здесь просто картинка.' snd.play('snd/click.wav', 7); end;
-	if en and name == 'clickonscene' and clickonsceneenabled then p'You clicked on the scene area. Here is just a picture.' snd.play('snd/click.wav', 7); end;
-	if ua and name == 'clickonscene' and clickonsceneenabled then p'Ти натиснув на область сцени. Тут просто зображення.' snd.play('snd/click.wav', 7); end;
-	if name == 'traces' then x = rnd(600); y = rnd(500); snd.play('snd/click.wav', 7); walkin('control_room')  end;
-	if name == 'ruslang' then setru(); rulangimage = "gfx/russian_selected.png"; enlangimage = "gfx/english.png"; ualangimage = "gfx/ukrainian.png"; snd.play('snd/click.wav', 7); walk('main')  end;
-	if name == 'englang' then seten(); enlangimage = "gfx/english_selected.png"; rulangimage = "gfx/russian.png"; ualangimage = "gfx/ukrainian.png"; snd.play('snd/click.wav', 7); walk('main')  end;
-	if name == 'ukrlang' then setua(); ualangimage = "gfx/ukrainian_selected.png"; enlangimage = "gfx/english.png"; rulangimage = "gfx/russian.png"; snd.play('snd/click.wav', 7); walk('main')  end;
-	if name == 'keys_infobar' and infobarshow then deleteinfobar(); theme.gfx.bg (bg_name) fadingcanbe = true; repeatplease = true; return okay(); end; 
+		return end;
+	if name == 'keys_infobar' and infobarshow then drawtext = false; deleteinfobar(); theme.gfx.bg (bg_name) fadingcanbe = true; repeatplease = true; createclickonscene(); return okay(); end; 
+	if name == 'clickonscene' and clickonsceneenabled and drawtext then
+	 	if ru then p'Ты нажал на область сцены. Здесь просто картинка.' end
+		if en then p'You clicked on the scene area. Here is just a picture.' end
+		if ua then p'Ти натиснув на область сцени. Тут просто зображення.' end
+	 sndplaylong() else drawtext = true; return std.nop() 
+	end;
+
 	end;
 
 exit = function()
@@ -81,7 +89,7 @@ exit = function()
 	end;
 
 managesound = function()
-	if not clickmute and not weareincontrol then snd.play('snd/click.wav', 1) end;
+	if not clickmute and not infobarshow and not weareincontrol then snd.play('snd/click.wav', 1) end;
 	clickmute = false;
 	if fadingcanbe then repeatplease = false; end;
  	end;
@@ -366,6 +374,9 @@ global { -- Много разных переменных. В основном л
 	langchanged = false; -- если язык не изменился, незачем перерисовывать сцену
 	redbarshow = false; -- показан ли красный экран
 	death_time = 1000; -- время показа красного экрана для таймера
+	drawtext = true; -- показан ли текст при клике на сцену
+	clickonscene_x = 50; -- координаты области клика по картинке
+	clickonscene_y = 35;
 }
 
 stat {
@@ -4266,7 +4277,7 @@ deletecursors = function()
 	end;
 
 createclickonscene = function()
-	D {"clickonscene", "img", "gfx/clickonscene.png", x = 50, y = 35, click = true, z = -1}
+	D {"clickonscene", "img", "gfx/clickonscene.png", x = clickonscene_x, y = clickonscene_y, click = true, z = -1}
 	clickonsceneenabled = true;
 	end;
 deleteclickonscene = function()
@@ -4399,6 +4410,18 @@ obj {
 obj {
 	nam = 'fontsizeplus';
 	act = function()
+	fontsizeinc();
+	end;
+}
+
+obj {
+	nam = 'fontsizeminus';
+	act = function()
+	fontsizedec();
+	end;
+}
+
+function fontsizeinc()
 	if theme.get'win.fnt.size' < '25' then fontsize = theme.get'win.fnt.size'+1; end;
 	theme.win.font ("fnt/{sans,sans-b,sans-i,sans-bi}.ttf", fontsize, 1);
 	if ru then if theme.get'win.fnt.size' <= '24' then p ( fmt.c('^Размер шрифта увеличен.') ); end; end;
@@ -4408,12 +4431,9 @@ obj {
 	if en then if theme.get'win.fnt.size' == '25' then p ( fmt.c('^Much more?..') ); end; end;
 	if ua then if theme.get'win.fnt.size' == '25' then p ( fmt.c('^Куди вже більше?..') ); end; end;
 	fontsize = theme.get'win.fnt.size';
-	end;
-}
+end;
 
-obj {
-	nam = 'fontsizeminus';
-	act = function()
+function fontsizedec()
 	if theme.get'win.fnt.size' > '10' then fontsize = theme.get'win.fnt.size'-1; end;
 	theme.win.font ("fnt/{sans,sans-b,sans-i,sans-bi}.ttf", fontsize, 1);
 	if ru then if theme.get'win.fnt.size' >= '11' then p ( fmt.c('^Размер шрифта уменьшен.') ); end; end;
@@ -4423,9 +4443,7 @@ obj {
 	if en then if theme.get'win.fnt.size' == '10' then p ( fmt.c('^Far less?..') ); end; end;
 	if ua then if theme.get'win.fnt.size' == '10' then p ( fmt.c('^Куди вже менше?..') ); end; end;
 	fontsize = theme.get'win.fnt.size';
-	end;
-}
-
+end;
 
 room {
 	nam = 'info_room';
@@ -4554,7 +4572,6 @@ game.onkey = function(s, press, key)
 		ualangimage = "gfx/ukrainian.png";
 		if here() ~= 'main' then
 					if langchanged then walk( here() ) 
---	else p(inplaceofrespawnRU[counter]) 
 					end;
 		end;
 		if firststart then walk(here()) end;
@@ -4577,10 +4594,17 @@ game.onkey = function(s, press, key)
 		if here() ~= 'main' then if langchanged then walk( here() )  end; end;
 		if firststart then walk(here()) end;
 		return end;
-	if not passedintro and not key == 'o' and not key == 'k' and not key == 'i' and not key == 'r' and not key == 'e' and not key == 'u' and not key == 'escape' then return true else return false end;
+--	p("Нажата: ", key);
+	if passedintro and key == '-' then 
+	if clickonscene_y >= 26 then fontsizedec() clickonscene_y = clickonscene_y-1.5 deleteclickonscene() createclickonscene() theme.gfx.bg (bg_name) end;
+				 return end;
+	if passedintro and key == '=' then
+	if clickonscene_y <= 45.5 then fontsizeinc() clickonscene_y = clickonscene_y+1.5 deleteclickonscene() createclickonscene() theme.gfx.bg (bg_name) end;
+				 return end;
+	if not passedintro and not key == 'o' and not key == 'k' and not key == 'i' and not key == 'r' and not key == 'e' and not key == 'u' and not key == 'escape' and not key == '-' and not key == '=' then return true else return false end;
 end;
 
-okay = function()
+okay = function() -- заморозить сцену и перейти ещё раз
 	std.nop();
 	walk ( here() );
 	end;
