@@ -32,7 +32,7 @@ xact.walk = walk
 xact.walkout = walkout
 
 function init ()
-	take 'статус'
+	if theme.name() ~= '.' then take 'статус'; end;
 	take 'fonarik'
 	take 'maintain'
 	lifeon 'maintain'
@@ -87,6 +87,7 @@ exit = function()
 	pleasedrink = false;
 	pleaseeat = false;
 	end;
+
 
 managesound = function()
 	if not clickmute and not infobarshow and not weareincontrol then snd.play('snd/click.wav', 1) end;
@@ -381,7 +382,15 @@ global { -- Много разных переменных. В основном л
 	current_en = '';
 	current_ua = '';
 	temphide = false; -- если тру - то не играть звук, один раз. нужно для двери, чтобы когда меняешь язык то не было скрипа
+	statnum = '0'; -- число статуса, которое передаем в декоратор
+	statword = ''; -- сюда запишем перевод индикатора прогресса
 }
+
+setstatword = function()
+	if ru then statword = 'Прогресс: '; end;
+	if en then statword = 'Progress: '; end;
+	if ua then statword = 'Прогрес: '; end;
+	end;
 
 stat {
 	nam = 'статус';
@@ -397,6 +406,19 @@ stat {
 		pn (fmt.c(' '))
 	end
 };
+
+statnumcalc = function()
+		if rightwaychoosen then choose = rightchoose; end; 
+		if leftwaychoosen then choose = leftchoose; end; 
+		if straightwaychoosen then choose = straightchoose; end; 
+	statnum = statword..string.sub( tostring( ((wr+choose)/(max+maxchoose))*100 ), 1, 4 )..' %' ;	
+end;
+
+declare {
+status = function()
+	return statnum
+end;
+}
 
 global { -- Сообщения на перекрестке.
 	counter = 0;
@@ -516,6 +538,11 @@ obj {
 	disp = false;
 	on = false;
 	life = function(s)
+				statnumcalc();
+				setstatword();
+				deletestatus();
+				if not weareincontrol and passedintro then createstatus(); end
+				theme.gfx.bg (bg_name)
 		if player_moved() then
 		s.on = false;
 		countflush = countflush+1;
@@ -4280,17 +4307,27 @@ obj {
 		end;
 }
 
+createstatus = function()
+	if not here():type 'dlg' then D {"text", "txt", status, xc = true, yc = true, x = 695, w = 160, y = 102, align = 'center', hidden = false, h = 128, typewriter = false, font = 'fnt/Classicrussianc.otf', size = 20 , click = false, z = -1 } end;
+	end;
+deletestatus = function()
+	D { "text" }
+	end;
+
+
 createbutton = function()
 	D {"control_panel", "img", "gfx/options_menu.png", x = 695, y = 569, click = true, z = -1}
 	D {"info_panel", "img", "gfx/info_menu.png", x = 635, y = 567, click = true, z = -1}
 	D {"statsclick", "img", "gfx/statsclick.png", x = 635, y = 32, click = true, z = -1}
 	createclickonscene();
+	createstatus();
 	end;
 deletebutton = function()
 	D { "control_panel" }
 	D { "info_panel" }
 	D { "statsclick" }
 	deleteclickonscene();
+	deletestatus();
 	end;
 
 createcursors = function()
@@ -4599,7 +4636,7 @@ game.onkey = function(s, press, key)
 		enlangimage = "gfx/english.png";
 		ualangimage = "gfx/ukrainian.png";
 		if here() ~= 'main' then
-					if langchanged then temphide = true walk( here() ) temphide = false else
+					if langchanged then temphide = true setstatword() walk( here() ) temphide = false else
 						if seen('dub', here() ) then std.nop() walk( here() )
 						 end;
 					end;
@@ -4612,7 +4649,7 @@ game.onkey = function(s, press, key)
 		enlangimage = "gfx/english_selected.png";
 		rulangimage = "gfx/russian.png";
 		ualangimage = "gfx/ukrainian.png";
-		if here() ~= 'main' then if langchanged then temphide = true walk( here() ) temphide = false else
+		if here() ~= 'main' then if langchanged then temphide = true setstatword() walk( here() ) temphide = false else
 						if seen('dub', here() ) then  std.nop() walk( here() )
 						 end;
 		 			end;
@@ -4625,7 +4662,7 @@ game.onkey = function(s, press, key)
 		ualangimage = "gfx/ukrainian_selected.png";
 		rulangimage = "gfx/russian.png";
 		enlangimage = "gfx/english.png";
-		if here() ~= 'main' then if langchanged then temphide = true walk( here() ) temphide = false else
+		if here() ~= 'main' then if langchanged then temphide = true setstatword() walk( here() ) temphide = false else
 						if seen('dub', here() ) then std.nop() walk( here() )
 						 end;
 					end;
