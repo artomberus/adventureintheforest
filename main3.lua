@@ -75,9 +75,9 @@ function game:ondecor(name, x, y)
 		return end;
 	if name == 'keys_infobar' and infobarshow then drawtext = false; deleteinfobar(); theme.gfx.bg (bg_name) fadingcanbe = true; repeatplease = true; createclickonscene(); return okay(); end; 
 	if name == 'clickonscene' and clickonsceneenabled and drawtext then
-	 	if ru then p'Ты нажал на область сцены. Здесь просто картинка.' end
-		if en then p'You clicked on the scene area. Here is just a picture.' end
-		if ua then p'Ти натиснув на область сцени. Тут просто зображення.' end
+	 	if ru then p(current_ru) end  --p'Ты нажал на область сцены. Здесь просто картинка.' p(here()) end
+		if en then p(current_en) end  --p'You clicked on the scene area. Here is just a picture.' end
+		if ua then p(current_ua) end  --p'Ти натиснув на область сцени. Тут просто зображення.' end
 	 sndplaylong() clickmute = false; else drawtext = true; return std.nop() 
 	end;
 
@@ -377,6 +377,10 @@ global { -- Много разных переменных. В основном л
 	drawtext = true; -- показан ли текст при клике на сцену
 	clickonscene_x = 50; -- координаты области клика по картинке
 	clickonscene_y = 35;
+	current_ru = ''; -- сообщение по клику на сцену. меняем в каждой комнате
+	current_en = '';
+	current_ua = '';
+	temphide = false; -- если тру - то не играть звук, один раз. нужно для двери, чтобы когда меняешь язык то не было скрипа
 }
 
 stat {
@@ -572,6 +576,9 @@ room {
 	enter = function()
 		snd.music 'mus/Atlantis.ogg' if firststart then snd.play('snd/breath.ogg', 1) end   bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
 		passedintro = true;
+		current_ru = 'Ты нажал на область сцены. Здесь просто картинка. Но в каждом новом месте - свой комментарий.';
+		current_en = 'You clicked on the scene area. Here is just a picture. But in each new place - a new comment.';
+		current_ua = 'Ти натиснув на область сцени. Тут просто зображення. Але в кожному новому місці - новий коментар.';
 		end;
 	dsc = function (i)
 		if firststart then
@@ -659,6 +666,9 @@ room {
 		end;
 	enter = function()
 		snd.music 'mus/Atlantis.ogg' if holeway then enable '#hole' end;
+		current_ru = 'Ты возле хижины.';
+		current_en = "You're near the hut.";
+		current_ua = 'Ти біля хатини.';
 		end;
 	decor = function(l) 
 		if ru then p [[Ты видишь старую хижину, которую построили, наверное, еще до революции. Она перекосилась, и только густой лес своими могучими ветвями не позволяет ей развалиться.]]; end;
@@ -721,9 +731,12 @@ room {
 		elseif haveudochka and not havevedro and not havelopata then return 'gfx/inhouse/13.png' else return 'gfx/inhouse/6.png'; end
 		end;
 	enter = function()
-		snd.music 'mus/HouseOfEvil.ogg' if not brokenwithtopor then snd.play('snd/dooropen.ogg', 1) end
+		snd.music 'mus/HouseOfEvil.ogg' if not brokenwithtopor and not temphide then snd.play('snd/dooropen.ogg', 1) end
+			current_ru = 'Ты в доме.';
+			current_en = "You're in the hut.";
+			current_ua = 'Ти в хатині.';
 		end;
-	onexit = function(a) snd.stop_music(); if not brokenwithtopor then snd.play('snd/dooropen.ogg', 1) end end;
+	onexit = function(a) snd.stop_music(); if not brokenwithtopor and not temphide then snd.play('snd/dooropen.ogg', 1) end end;
 	decor = [[Несмотря на запущенность строения, внутри эта хижина выглядит лучше, чем снаружи. Сквозь окно проникает достаточно света, чтобы осветить единственную комнату.]];
 	obj = {'lopata', 'komod', 'vedro', 'udochka'};
 	way = {path {'Наружу', 'leftway'} };
@@ -732,6 +745,11 @@ room {
 	nam = 'centerway';
 	title = 'Дуб';
 	pic = 'gfx/2.png';
+	enter = function()
+	current_ru = 'Ты возле дуба.';
+	current_en = "You're near the oak.";
+	current_ua = 'Ти біля дуба.';
+	end;
 	decor = [[Ты видишь огромный дуб. В центре дуба зияет черное {light|дупло}, здесь, наверное, кто-то живет.]];
 	way = {path {'Развилка', 'start'} };
 }:with {
@@ -768,6 +786,11 @@ room {
 		if vedrostand then return 'gfx/4_2.png'
 		else return 'gfx/4.png'; end
 		end;
+	enter = function()
+	current_ru = 'Ты возле озера.';
+	current_en = "You're near the lake.";
+	current_ua = 'Ти біля озера.';
+	end;
 	obj = {'lake', 'bereg'};  -- 'walkfish'
 	way = {path {'Развилка', 'start'} };
 }
@@ -778,6 +801,11 @@ room {
 		if stonebreak then 
 		return 'gfx/5_2.png'; else return 'gfx/5.png';
 		end
+	end;
+	enter = function()
+	current_ru = 'Ты возле пропасти.';
+	current_en = "You're near the fall.";
+	current_ua = 'Ти біля прірви.';
 	end;
 	decor = 'Ты у пропасти. Впереди - большие и маленькие камни, подъемы и спуски, но все это опасно. Идти туда - риск, да и на горизонте не видно каких-либо построек... Вдали, на самом дне {dolina|долины} - огромными буквами выбито - прохода нет. Ты поневоле задумываешься, как же попал сюда?';
 	obj = {'valun', 'топор', 'dolina'};
@@ -4571,7 +4599,7 @@ game.onkey = function(s, press, key)
 		enlangimage = "gfx/english.png";
 		ualangimage = "gfx/ukrainian.png";
 		if here() ~= 'main' then
-					if langchanged then walk( here() ) else
+					if langchanged then temphide = true walk( here() ) temphide = false else
 						if seen('dub', here() ) then std.nop() walk( here() )
 						 end;
 					end;
@@ -4584,7 +4612,7 @@ game.onkey = function(s, press, key)
 		enlangimage = "gfx/english_selected.png";
 		rulangimage = "gfx/russian.png";
 		ualangimage = "gfx/ukrainian.png";
-		if here() ~= 'main' then if langchanged then walk( here() ) else
+		if here() ~= 'main' then if langchanged then temphide = true walk( here() ) temphide = false else
 						if seen('dub', here() ) then  std.nop() walk( here() )
 						 end;
 		 			end;
@@ -4597,7 +4625,7 @@ game.onkey = function(s, press, key)
 		ualangimage = "gfx/ukrainian_selected.png";
 		rulangimage = "gfx/russian.png";
 		enlangimage = "gfx/english.png";
-		if here() ~= 'main' then if langchanged then walk( here() ) else
+		if here() ~= 'main' then if langchanged then temphide = true walk( here() ) temphide = false else
 						if seen('dub', here() ) then std.nop() walk( here() )
 						 end;
 					end;
