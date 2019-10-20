@@ -91,6 +91,7 @@ exit = function()
 
 managesound = function()
 	if not clickmute and not infobarshow and not weareincontrol then snd.play('snd/click.wav', 1) end;
+	if enteredsamobranka then snd.play('snd/click.wav', 1) end;
 	clickmute = false;
 	if fadingcanbe then repeatplease = false; end;
  	end;
@@ -384,6 +385,7 @@ global { -- Много разных переменных. В основном л
 	temphide = false; -- если тру - то не играть звук, один раз. нужно для двери, чтобы когда меняешь язык то не было скрипа
 	statnum = '0'; -- число статуса, которое передаем в декоратор
 	statword = ''; -- сюда запишем перевод индикатора прогресса
+	enteredsamobranka = false; -- находимся ли в самобранке
 }
 
 setstatword = function()
@@ -2627,6 +2629,8 @@ room {
 	title = 'Вкуснейшие яства из волшебной скатерти!';
 	noinv = true;
 	enter = function()
+		weareincontrol = true;
+		enteredsamobranka = true;
 		bread1 = false;
 		bread2 = false;
 		cake3 = false;
@@ -2701,6 +2705,8 @@ room {
 		p ( fmt.c('{@ walkout|Свернуть скатерть-самобранку}') );
 		end;
 	exit = function()
+		enteredsamobranka = false;
+		weareincontrol = false;
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name)
 		if hungry >= hungrymax then prival1enabled = true prival2enabled = true prival3enabled = true prival4enabled = true prival5enabled = true prival6enabled = true end;
 		if youeatenfish and youeatenmilk then p [[Сочетать рыбу с молоком? А ты бесстрашный...]] end;
