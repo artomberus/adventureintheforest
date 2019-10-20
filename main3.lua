@@ -4572,10 +4572,10 @@ game.onkey = function(s, press, key)
 		ualangimage = "gfx/ukrainian.png";
 		if here() ~= 'main' then
 					if langchanged then walk( here() ) else
-						if seen('dub', here() ) then
-									if ru then return p(inplaceofrespawnRU[counter]) end 
-									if en then return p(inplaceofrespawnEN[counter]) end
-									if ua then return p(inplaceofrespawnUA[counter]) end 
+						if seen('dub', here() ) then std.nop() walk( here() )
+--									if ru then return p(inplaceofrespawnRU[counter]) end 
+--									if en then return p(inplaceofrespawnEN[counter]) end
+--									if ua then return p(inplaceofrespawnUA[counter]) end 
 						 end;
 					end;
 		end;
@@ -4588,10 +4588,10 @@ game.onkey = function(s, press, key)
 		rulangimage = "gfx/russian.png";
 		ualangimage = "gfx/ukrainian.png";
 		if here() ~= 'main' then if langchanged then walk( here() ) else
-						if seen('dub', here() ) then
-									if ru then return p(inplaceofrespawnRU[counter]) end 
-									if en then return p(inplaceofrespawnEN[counter]) end
-									if ua then return p(inplaceofrespawnUA[counter]) end 
+						if seen('dub', here() ) then  std.nop() walk( here() )
+--									if ru then return p(inplaceofrespawnRU[counter]) end 
+--									if en then return p(inplaceofrespawnEN[counter]) end
+--									if ua then return p(inplaceofrespawnUA[counter]) end 
 						 end;
 		 			end;
 		end;
@@ -4604,10 +4604,10 @@ game.onkey = function(s, press, key)
 		rulangimage = "gfx/russian.png";
 		enlangimage = "gfx/english.png";
 		if here() ~= 'main' then if langchanged then walk( here() ) else
-						if seen('dub', here() ) then
-									if ru then return p(inplaceofrespawnRU[counter]) end 
-									if en then return p(inplaceofrespawnEN[counter]) end
-									if ua then return p(inplaceofrespawnUA[counter]) end 
+						if seen('dub', here() ) then std.nop() walk( here() )
+--									if ru then return p(inplaceofrespawnRU[counter]) end 
+--									if en then return p(inplaceofrespawnEN[counter]) end
+--									if ua then return p(inplaceofrespawnUA[counter]) end 
 						 end;
 					end;
 		end;
