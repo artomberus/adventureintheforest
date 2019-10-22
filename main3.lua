@@ -75,9 +75,9 @@ function game:ondecor(name, x, y)
 		return end;
 	if name == 'keys_infobar' and infobarshow then drawtext = false; deleteinfobar(); theme.gfx.bg (bg_name) fadingcanbe = true; repeatplease = true; createclickonscene(); return okay(); end; 
 	if name == 'clickonscene' and clickonsceneenabled and drawtext then
-	 	if ru then p(current_ru) end  --p'Ты нажал на область сцены. Здесь просто картинка.' p(here()) end
-		if en then p(current_en) end  --p'You clicked on the scene area. Here is just a picture.' end
-		if ua then p(current_ua) end  --p'Ти натиснув на область сцени. Тут просто зображення.' end
+	 	if ru then p(current_ru) end 
+		if en then p(current_en) end 
+		if ua then p(current_ua) end 
 	 sndplaylong() clickmute = false; else drawtext = true; return std.nop() 
 	end;
 
@@ -386,6 +386,7 @@ global { -- Много разных переменных. В основном л
 	statnum = '0'; -- число статуса, которое передаем в декоратор
 	statword = ''; -- сюда запишем перевод индикатора прогресса
 	enteredsamobranka = false; -- находимся ли в самобранке
+	nearstone = false; -- находимся ли возле камня. нужно, чтобы не показывать там статус
 }
 
 setstatword = function()
@@ -396,7 +397,7 @@ setstatword = function()
 
 stat {
 	nam = 'статус';
---	pri = -1; -- в инстед версии 3.3.0 и выше эта строчка не требуется. Но в финале её оставлю, для совместимости. Обходит баг с сортировкой предметов в инвентаре.
+	pri = -1; -- в инстед версии 3.3.0 и выше эта строчка не требуется. Но в финале её оставлю, для совместимости. Обходит баг с сортировкой предметов в инвентаре.
 	disp = function (s)
 		if rightwaychoosen then choose = rightchoose; end; -- maxchoose = rightmaxchoose; end;
 		if leftwaychoosen then choose = leftchoose; end; -- maxchoose = leftmaxchoose; end;
@@ -470,7 +471,6 @@ global { -- Сообщения на перекрестке.
 	[[Tale of sense, if not of truth! Food for thought to honest youth. In your case, a fairy tale is pure truth.]],
 	[[Forest is the source of life, strength and health. But not for everyone and not always. It is a threat to you now.]],
 	[[Don’t drink, brother, water from the local lake - you’ll become a goat.]],
---	[[A fool walks through the forest, looking for a fool stupider than himself...]], bad translation, this is not an insult, but a quote
 	[[From the place where it says "there is no passage" - it’s more logical to go to the place where it is. You're halfway now.]],
 	[[What remains after you?]],
 	[[If you need to choose between good and evil - what would you choose?]],
@@ -484,8 +484,6 @@ global { -- Сообщения на перекрестке.
 	[[You remember how comfortable and safe at home right now...]],
 	[[And yet all this is strange...]],
 	[[Do you believe in fairy tales?]],
---	[[The universal great love. My bottomless piggy bank in the void...]],
---	[[The universal great love. My secret gate in the void...]],
 	[[Who are you? How to understand you? What are you thinking, wandering around these forest thickets?]],
 	[[Movement is life. You can’t stand still - you grow into the ground.]],
 	[[I sincerely admire you reading all these phrases. Continue.]],
@@ -505,7 +503,6 @@ global { -- Сообщения на перекрестке.
 	[[Казка брехня, але в ній натяк... Ні, в твоєму випадку казка - чиста правда.]],
 	[[Ліс - джерело життя, сили і здоров'я. Але не для всіх і не завжди. Для тебе він зараз - загроза.]],
 	[[Не пий, братику, воду з озера місцевого - козликом станеш.]],
---	[[Ходить дурачок лісом, шукає дурник дурніші себе ...]],
 	[[З місця, де пишуть "проходу немає" - логічніше йти в місце, де він таки є. А ти зараз на півдорозі.]],
 	[[Що залишиться після тебе?]],
 	[[Якщо треба вибрати між добром і злом - що б ти вибрав?]],
@@ -519,8 +516,6 @@ global { -- Сообщения на перекрестке.
 	[[Ти згадуєш, як затишно і безпечно зараз вдома...]],
 	[[І все ж дивно все це...]],
 	[[Ти віриш у казки?]],
---	[[Вселенська велика любов. Моя бездонна скарбничка в порожнечі ...]],
---	[[Вселенська велика любов. Моя секретна хвіртка в порожнечі ...]],
 	[[Хто ти? Як зрозуміти тебе? Про що ти думаєш, блукаючи по цим лісових чагарниках?]],
 	[[Рух - це життя. Не можна стояти на місці - вростеш в землю.]],
 	[[Я щиро захоплююся тим, що ти читаєш всі ці фрази. Продовжуй.]],
@@ -543,7 +538,7 @@ obj {
 				statnumcalc();
 				setstatword();
 				deletestatus();
-				if not weareincontrol and passedintro then createstatus(); end
+				if not weareincontrol and not nearstone and passedintro then createstatus(); end
 				theme.gfx.bg (bg_name)
 		if player_moved() then
 		s.on = false;
@@ -799,8 +794,7 @@ obj {  -- Дупло.
 		elseif w^'fonarik' then
 			p [[Ты посветил фонариком. Оттуда внезапно выскочила белка и убежала. Ты пожалел, что испугал бедное животное. Но что теперь поделать. В дупле лежал... ключ.]] -- snd.play('snd/SQ2.ogg', 1)
 			snd.play('snd/flashlight.ogg', 1)
-			take('key') touchedkey = true; if not touchedtopor then wr = wr+1; test(); end;
-			remove('fonarik')
+			replace('fonarik', 'key') touchedkey = true; if not touchedtopor then wr = wr+1; test(); end;
 			return
 			end
 		return false;
@@ -920,10 +914,22 @@ obj {
 }
 obj {
 	nam = 'key';
-	disp = fmt.img('gfx/inv/key.png')..'Ключ';
+	disp = function()
+		if ru then return fmt.img('gfx/inv/key.png')..'Ключ'; end;
+		if en then return fmt.img('gfx/inv/key.png')..'Key'; end;
+		if ua then return fmt.img('gfx/inv/key.png')..'Ключ'; end;
+		end;
 	inv = function()
 		clickmute = true;
+			if ru then
 		if isusercozel then p 'И зачем он теперь тебе?' waycounter = waycounter+1 snd.play('snd/sheep.ogg', 1) elseif brokenwithtopor then p 'Теперь он тебе не нужен. Ты же поспешил, начал все крушить, ломать!' else p 'Старый, большой ключ.' end
+			end
+			if en then
+		if isusercozel then p 'И зачем он теперь тебе?' waycounter = waycounter+1 snd.play('snd/sheep.ogg', 1) elseif brokenwithtopor then p 'Now you don’t need it. Bcause you hurried, started to destroy everything, to break!' else p 'Old, big key.' end
+			end
+			if ua then
+		if isusercozel then p 'И зачем он теперь тебе?' waycounter = waycounter+1 snd.play('snd/sheep.ogg', 1) elseif brokenwithtopor then p 'Тепер він тобі не потрібен. Ти ж поспішив, почав все трощити, ламати!' else p 'Старий, великий ключ.' end
+			end
 	end;
 }
 obj {
@@ -956,8 +962,8 @@ obj {
 	if z^'chervi' then p [[Нет смысла надевать червя на крючок, который не на удочке...]] return end;
 	if z^'udochka' then
 	p [[Ты собрал удочку.]]; wr = wr+1; test(); snd.play('snd/leskaiudochka.ogg', 1)
-	take ('udsobr')
-	remove ('рыболовные снасти') remove ('udochka')
+	remove ('рыболовные снасти')
+	replace ('udochka', 'udsobr')
 	return
 	end
 	return false;
@@ -1018,8 +1024,8 @@ obj {
 			p [[Сначала надо собрать удочку.]] return
 		elseif z^'рыболовные снасти' then
 			p [[Ты собрал удочку.]]; wr = wr+1; test(); snd.play('snd/leskaiudochka.ogg', 1)
-			take ('udsobr')
-			remove ('рыболовные снасти') remove ('udochka')
+			remove ('рыболовные снасти')
+			replace ('udochka', 'udsobr')
 			return
 			end
 		return false;
@@ -1039,8 +1045,7 @@ end;
 	if z^'lopata' then
 		p [[Ты приложил все свои усилия и с трудом, но сумел сдвинуть валун с места. Тяжелый камень с затихающим звуком покатился вниз.  Ты принялся копать землю и вскоре собрал несколько червей.]] snd.play('snd/kamen.ogg', 1) wr = wr+1; test(); stonebreak = true;
 		disable 'valun' 
-		take 'chervi'
-		remove ('lopata')
+		replace ('lopata', 'chervi')
 		return
 		end
 	return false;
@@ -1098,8 +1103,8 @@ obj {  --собранная удочка, вторая итерация удоч
 			p [[Сломать единственную удочку, когда тебе угрожает смерть от голода? Оригинально! А ведь ты уже собрал ее, остался всего шаг...]] return end
 		if z^'chervi' then
 			p [[Ты аккуратно нанизал червя на крючок.]]; wr = wr+1; test();
-			take ('udochka_with_chervi')
-			remove ('udsobr') remove ('chervi')
+			remove ('chervi')
+			replace ('udsobr', 'udochka_with_chervi')
 			return
 			end
 		return false;
@@ -1138,8 +1143,7 @@ obj { -- озеро
 			p [[В ведре уже есть вода.]] return
 		elseif w^'vedro' then
 			p [[Аккуратно нагнувшись, чтобы не упасть, ты набрал в ведро воды из озера.]] vedrowithwater = true snd.play('snd/awaterlap.ogg', 1) if firstfill then wr = wr+1; test(); firstfill = false end
-			take ('vedrofull')
-			remove ('vedro')
+			replace('vedro', 'vedrofull')
 			return
 			end
 		return false;
@@ -1879,8 +1883,7 @@ obj {
 	act = function(s)
 		p [[Ты с аппетитом съел яблоки, пока, наконец, чувство голода не прошло. У тебя осталось только одно яблоко.]]
 		remove(s);
-		remove('apples');
-		take('one_apple');
+		replace('apples', 'one_apple');
 		eatenapples = true;
 		if updatescene then walk('longroad6') end; -- это надо для того, чтобы включить переход дальше после того, как съел яблоки
 --			replace ('apples', 'one_apple');
@@ -1975,12 +1978,16 @@ room {
 	disp = 'Возле камня';
 	pic = 'gfx/13_2.png';
 	enter = function()
+		deletebutton();
 		bg_name = 'gfx/bg_good.png' theme.gfx.bg (bg_name) 
 		if not stoneseen then wr = wr+1; end;
 		stoneseen = true;
+		nearstone = true;
 		end;
 	decor = fmt.c('^На древнем камне выбито: ^^ Налево пойдёшь – себя потеряешь, коня спасёшь.^ Направо пойдёшь – коня потеряешь, себя спасёшь.^ Прямо пойдёшь – и себя, и коня потеряешь.');	
 	exit = function()
+		nearstone = false;
+		createbutton();
 		bg_name = 'gfx/bg.png' theme.gfx.bg (bg_name) 
 		end;
 	way = { path{'Отойти от камня', 'threeways'} };
@@ -2437,10 +2444,10 @@ obj {
 		if z^'samobranka' then p [[-- Она твоя. Используй скатерть мудро.]]
 		elseif z^'one_apple' then p [[-- Увы. Одного яблока мало... Молодым я стану, если съем три яблока подряд. Иначе бесполезно.]]
 		elseif z^'kuvshin' then p [[Это пустой кувшин, который я дал тебе. Набери в него живой воды, пожалуйста!]] -- end;
-		elseif z^'apples' and dalwater and not firsttalkwithstarik then p [[-- Спасибо тебе, добрый человек! Взамен я дарю тебе скатерть-самобранку! Пусть она выручает тебя в пути. Только помни - никому не рассказывай о ней! Если проболтаешься - беда будет.]] take ('samobranka') remove('apples') haveskatert = true 
+		elseif z^'apples' and dalwater and not firsttalkwithstarik then p [[-- Спасибо тебе, добрый человек! Взамен я дарю тебе скатерть-самобранку! Пусть она выручает тебя в пути. Только помни - никому не рассказывай о ней! Если проболтаешься - беда будет.]] replace('apples', 'samobranka') haveskatert = true 
 		elseif z^'apples' and not dalwater and not firsttalkwithstarik then  p [[-- Спасибо тебе, добрый человек! Теперь я молод. Но глаза мои по-прежнему больны... Только живая вода может излечить их и вернуть мне возможность видеть этот мир!]] dalapples = true remove('apples') -- end
 		elseif z^'apples' and firsttalkwithstarik then p [[Ты бы поговорил сначала с человеком...]]
-		elseif z^'kuvshinwithwater' and dalapples then p [[-- Спасибо тебе, добрый человек! Взамен я дарю тебе скатерть-самобранку! Пусть она выручает тебя в пути. Только помни - никому не рассказывай о ней! Если проболтаешься - беда будет.]] take ('samobranka') remove('kuvshinwithwater') haveskatert = true elseif z^'kuvshinwithwater' and not dalapples then p [[Старик умыл глаза водой из кувшина. ^^-- Спасибо тебе, добрый человек! Теперь я могу хорошо видеть. Но я ведь по-прежнему стар! Найди молодильные яблоки.]] dalwater = true dalvodu = true remove('kuvshinwithwater') end
+		elseif z^'kuvshinwithwater' and dalapples then p [[-- Спасибо тебе, добрый человек! Взамен я дарю тебе скатерть-самобранку! Пусть она выручает тебя в пути. Только помни - никому не рассказывай о ней! Если проболтаешься - беда будет.]] replace('kuvshinwithwater', 'samobranka') haveskatert = true elseif z^'kuvshinwithwater' and not dalapples then p [[Старик умыл глаза водой из кувшина. ^^-- Спасибо тебе, добрый человек! Теперь я могу хорошо видеть. Но я ведь по-прежнему стар! Найди молодильные яблоки.]] dalwater = true dalvodu = true remove('kuvshinwithwater') end
 		if z^'topor' then p [[Откуда в тебе эта тяга всё крушить, ломать и убивать? Оставь старика в покое.]] end
 		end;
 };
@@ -4060,7 +4067,7 @@ dlg {
 	pic = 'gfx/41_2.png';
 	enter = function(s)
 		p [[-- О, пиво! Спасибо! А почему оно в кувшине? Мог бы и кружку найти. Но ладно. Договор есть договор. Держи свою муку.]];
-		take('muka'); remove('kuvshinzpivom'); mukaest = true;
+		replace('kuvshinzpivom', 'muka'); mukaest = true;
 		bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
 		deletebutton();
 		end;
@@ -4087,7 +4094,6 @@ dlg {
 	pic = 'gfx/41_2.png';
 	enter = function(s)
 		p [[-- А, это ты. Принес тараньку?]];
-		take('muka'); remove('kuvshinzpivom');
 		bg_name = 'gfx/bg_talk.png' theme.gfx.bg (bg_name)
 		deletebutton();
 		end;
